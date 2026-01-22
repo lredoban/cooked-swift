@@ -1,0 +1,11 @@
+// Config.xcconfig
+// Environment configuration for Cooked app
+
+// Default placeholder values (will be overridden by Secrets.xcconfig)
+SUPABASE_URL = https:/$()/your-project-id.supabase.co
+SUPABASE_ANON_KEY = your-anon-key-here
+BACKEND_URL = http:/$()/localhost:3000
+REVENUECAT_API_KEY = appl_your_api_key
+
+// Include secrets LAST so they override defaults
+#include? "Secrets.xcconfig"
