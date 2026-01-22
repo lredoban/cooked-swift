@@ -57,21 +57,21 @@ This roadmap adapts the original React Native/Expo roadmap for native iOS develo
 
 ### Scope
 - **Recipe Import (Primary Focus)**
-  - URL input sheet with paste support
-  - Call backend Extract API
-  - Processing view with ProgressView
-  - Preview/edit imported data before saving
+  - [x] URL input sheet with paste support
+  - [x] Call backend Extract API
+  - [x] Processing view with ProgressView
+  - [x] Preview/edit imported data before saving
 
 - **Recipe CRUD (Minimal)**
-  - Save recipe to Supabase
-  - View recipe detail
-  - Delete recipe
+  - [x] Save recipe to Supabase
+  - [x] View recipe detail
+  - [x] Delete recipe
   - (Manual entry deferred - import is primary flow)
 
 - **Recipe Library**
-  - Display user's recipes in LazyVGrid
-  - Recipe count display
-  - Loading states with ProgressView
+  - [x] Display user's recipes in LazyVGrid
+  - [x] Recipe count display
+  - [x] Loading states with ProgressView
 
 ### Recipe Extract API
 
@@ -193,11 +193,11 @@ struct ImportRecipeSheet: View {
 ```
 
 ### Deliverables
-- Import from TikTok, Instagram, YouTube, URLs
-- Preview and edit before saving
-- Recipe saved to Supabase
-- Recipe library displays all recipes
-- Recipe detail view working
+- [x] Import from TikTok, Instagram, YouTube, URLs
+- [x] Preview and edit before saving
+- [x] Recipe saved to Supabase
+- [x] Recipe library displays all recipes
+- [x] Recipe detail view working
 
 ---
 
