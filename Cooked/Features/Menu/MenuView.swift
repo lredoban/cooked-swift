@@ -1,46 +1,70 @@
 import SwiftUI
 
 struct MenuView: View {
+    @Environment(MenuState.self) private var menuState
+    @Environment(RecipeState.self) private var recipeState
+
     var body: some View {
+        @Bindable var state = menuState
+
         NavigationStack {
-            VStack(spacing: 20) {
-                Spacer()
+            Group {
+                switch menuState.viewState {
+                case .loading:
+                    LoadingView(message: "Loading menu...")
 
-                Image(systemName: "fork.knife")
-                    .font(.system(size: 60))
-                    .foregroundStyle(.orange)
+                case .empty:
+                    EmptyMenuView()
 
-                Text("What do you want to cook?")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                case .planning(let menu):
+                    PlanningMenuView(menu: menu)
 
-                Button(action: {
-                    // TODO: Navigate to add recipes
-                }) {
-                    Label("Add Recipes", systemImage: "plus")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
+                case .toCook(let menu):
+                    ToCookMenuView(menu: menu)
+
+                case .error(let message):
+                    errorView(message: message)
                 }
-                .padding(.horizontal, 40)
-
-                Spacer()
-
-                Button("View past menus") {
-                    // TODO: Navigate to menu history
-                }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .padding(.bottom, 20)
             }
             .navigationTitle("Menu")
+            .sheet(isPresented: $state.isShowingRecipePicker) {
+                RecipePickerSheet()
+            }
+        }
+    }
+
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 16) {
+            Spacer()
+
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 50))
+                .foregroundStyle(.orange)
+
+            Text("Something went wrong")
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            Text(message)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Button("Try Again") {
+                Task {
+                    await menuState.loadCurrentMenu()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.orange)
+
+            Spacer()
         }
     }
 }
 
 #Preview {
     MenuView()
+        .environment(MenuState())
+        .environment(RecipeState())
 }

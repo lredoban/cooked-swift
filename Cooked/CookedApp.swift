@@ -11,12 +11,14 @@ import SwiftUI
 struct CookedApp: App {
     @State private var supabaseService = SupabaseService.shared
     @State private var recipeState = RecipeState()
+    @State private var menuState = MenuState()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(supabaseService)
                 .environment(recipeState)
+                .environment(menuState)
                 .task {
                     await initializeApp()
                 }
@@ -27,6 +29,7 @@ struct CookedApp: App {
         let connected = await supabaseService.testConnection()
         if connected {
             await recipeState.loadRecipes()
+            await menuState.loadCurrentMenu()
         } else {
             print("[Cooked] Supabase connection failed")
         }
