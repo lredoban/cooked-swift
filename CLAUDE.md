@@ -1,49 +1,59 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Quick Reference
 
-## Project Overview
+- **Project:** Cooked - Recipe Menu App (iOS Native)
+- **Platform:** iOS 17+
+- **Language:** Swift 6.0
+- **UI Framework:** SwiftUI with `@Observable`
+- **Backend:** Supabase (PostgreSQL + Auth)
+- **Payments:** RevenueCat
+- **Recipe Import:** Nitro backend API
 
-Cooked is a native iOS recipe menu app built with Swift/SwiftUI. The core concept is **menu-first**: users build a menu of recipes they commit to cooking, then generate a grocery list. The menu (not recipes) is the product.
+## Project Philosophy
+
+**Core concept:** Menu-first - users build a menu of recipes they commit to cooking, then generate a grocery list. The menu (not recipes) is the product.
 
 **Key principle:** "Does this help the user cook this week?" — every feature must pass this filter.
 
-## Build & Development Commands
+## XcodeBuildMCP Integration
 
-```bash
-# Build for simulator
-xcodebuild -scheme Cooked -destination 'platform=iOS Simulator,name=iPhone 15'
+This project uses XcodeBuildMCP for all Xcode operations:
 
-# Run all tests
-xcodebuild test -scheme Cooked -destination 'platform=iOS Simulator,name=iPhone 15'
+```
+# Set session defaults first
+mcp__xcodebuildmcp__session-set-defaults (scheme: "Cooked", simulatorName: "iPhone 16")
 
-# Open in Xcode
-open Cooked.xcodeproj
+# Build & Run
+mcp__xcodebuildmcp__build_sim
+mcp__xcodebuildmcp__build_run_sim
+
+# Test
+mcp__xcodebuildmcp__test_sim
+
+# Clean
+mcp__xcodebuildmcp__clean
 ```
 
-Or use Xcode directly: select scheme and press ⌘R to run, ⌘U to test.
+## Project Structure
 
-## Architecture
-
-### Tech Stack
-- **Language:** Swift 5.9+, iOS 17+
-- **UI:** SwiftUI with `@Observable` for state management
-- **Navigation:** NavigationStack with 3-tab structure
-- **Backend:** Supabase (PostgreSQL + Auth) — shared with React Native version
-- **Payments:** RevenueCat for subscriptions
-- **Recipe Import:** Nitro backend API for video/URL extraction
-
-### Planned Directory Structure
 ```
 Cooked/
-├── App/           # App entry point, global state
-├── Features/      # Feature modules (Menu, Recipes, GroceryList)
-├── Services/      # Supabase, Auth, RevenueCat wrappers
-├── Models/        # Codable structs matching Supabase schema
-└── Shared/        # Reusable UI components
+├── App/                    # App entry point, AppTab enum
+├── Features/               # Feature modules
+│   ├── Recipes/            # Recipe library, import, detail
+│   │   └── Import/         # ImportRecipeSheet, RecipePreviewSheet
+│   ├── Menu/               # Menu planning and cooking
+│   └── GroceryList/        # Shopping list generation
+├── Models/                 # Codable structs matching Supabase
+├── Services/               # Supabase, RecipeService wrappers
+├── Shared/
+│   └── Components/         # Reusable UI (LoadingView, AsyncImageView)
+└── Configuration/          # Config.xcconfig, Secrets.xcconfig
 ```
 
-### Data Models
+## Data Models
+
 ```
 User { id, email, subscription_status }
 Recipe { id, user_id, title, source_type, source_url, ingredients[], steps[], tags[], times_cooked }
@@ -51,10 +61,12 @@ Menu { id, user_id, status (planning|to_cook|archived), recipes[] }
 GroceryList { id, menu_id, items[], staples_confirmed[] }
 ```
 
-### Menu State Machine
+## Menu State Machine
+
 ```
 EMPTY ──[add recipe]──▶ PLANNING ──[generate list]──▶ TO COOK ──[all cooked]──▶ ARCHIVED
 ```
+
 Only ONE menu can be in "To Cook" state at a time.
 
 ## Navigation Structure
@@ -69,41 +81,97 @@ Only ONE menu can be in "To Cook" state at a time.
 
 MENU is center tab, always opens first. This reflects the menu-first philosophy.
 
-## SwiftUI Patterns Used
+## Coding Standards
 
-### State Management
+### Swift Style
+
+- Use Swift 6 strict concurrency
+- Prefer `@Observable` over `ObservableObject`
+- Use `async/await` for all async operations
+- Use `guard` for early exits
+- Prefer value types (structs) over reference types (classes)
+- No force unwrapping (`!`) without justification
+
+### SwiftUI Patterns
+
 ```swift
+// State Management
 @Observable
-class MenuState {
-    var currentMenu: MenuWithRecipes?
-    var viewState: ViewState = .loading
+class RecipeState {
+    var recipes: [Recipe] = []
+    var isLoading = false
 }
-```
 
-### Environment Injection
-```swift
+// Environment Injection
 @main
 struct CookedApp: App {
-    @State private var appState = AppState()
+    @State private var recipeState = RecipeState()
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(appState)
+                .environment(recipeState)
         }
+    }
+}
+
+// View consuming state
+struct RecipesView: View {
+    @Environment(RecipeState.self) private var recipeState
+
+    var body: some View {
+        @Bindable var state = recipeState  // For bindings
+        // ...
+    }
+}
+
+// Navigation
+NavigationStack {
+    List(recipes) { recipe in
+        NavigationLink(value: recipe) {
+            RecipeRow(recipe: recipe)
+        }
+    }
+    .navigationDestination(for: Recipe.self) { recipe in
+        RecipeDetailView(recipe: recipe)
     }
 }
 ```
 
 ### Supabase Queries
+
 ```swift
 func fetchRecipes() async throws -> [Recipe] {
-    try await client.from("recipes").select().eq("user_id", value: userId).execute().value
+    try await client
+        .from("recipes")
+        .select()
+        .eq("user_id", value: userId)
+        .order("created_at", ascending: false)
+        .execute()
+        .value
+}
+```
+
+### Error Handling
+
+```swift
+enum RecipeServiceError: LocalizedError {
+    case extractionFailed(String)
+    case networkError
+    case unauthorized
+
+    var errorDescription: String? {
+        switch self {
+        case .extractionFailed(let msg): return "Failed to extract: \(msg)"
+        case .networkError: return "Network connection failed"
+        case .unauthorized: return "Please sign in"
+        }
+    }
 }
 ```
 
 ## Environment Configuration
 
-Create `Config.xcconfig` with:
+Create `Secrets.xcconfig` from template with:
 ```
 SUPABASE_URL = your-project-id.supabase.co
 SUPABASE_ANON_KEY = your-anon-key
@@ -119,18 +187,23 @@ REVENUECAT_API_KEY = appl_your_api_key
 | Video imports/month | 5 | Unlimited |
 | Menu history | 3 | Unlimited |
 
-## Development Phases
+## Development Status
 
-Current: **Phase 0** (Foundation) — basic project structure complete
+See `ROADMAP.md` for detailed phase breakdown.
 
-Upcoming phases:
-1. Manual recipe entry + CRUD
-2. Menu system (core product)
-3. Grocery list generation
-4. Recipe import from URLs/videos
-5. Search & filtering
-6. Menu history
-7. RevenueCat monetization
-8. Polish & App Store
+- **Phase 0:** Foundation & Setup ✅
+- **Phase 1:** Recipe Import & Core CRUD ✅
+- **Phase 2:** Menu System (Core Product) ⬅️ Current
+- **Phase 3:** Grocery List Generation
+- **Phase 4:** Search & Filtering
+- **Phase 5:** Menu History & Reuse
+- **Phase 6:** Monetization (RevenueCat)
+- **Phase 7:** Polish & App Store
 
-See `ROADMAP.md` for detailed implementation guidance per phase.
+## DO NOT
+
+- Use deprecated APIs (UIKit when SwiftUI suffices)
+- Create massive monolithic views (extract at ~100 lines)
+- Ignore Swift 6 concurrency warnings
+- Skip the menu-first philosophy
+- Add features that don't help users "cook this week"
