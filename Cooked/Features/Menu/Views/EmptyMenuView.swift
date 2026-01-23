@@ -37,7 +37,7 @@ struct EmptyMenuView: View {
             Spacer()
 
             Button("View past menus") {
-                // TODO: Navigate to menu history (Phase 5)
+                menuState.openHistory()
             }
             .font(.subheadline)
             .foregroundStyle(.secondary)

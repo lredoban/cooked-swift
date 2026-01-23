@@ -3,6 +3,7 @@ import SwiftUI
 struct ToCookMenuView: View {
     let menu: MenuWithRecipes
     @Environment(MenuState.self) private var menuState
+    @Environment(GroceryListState.self) private var groceryState
     @State private var showArchiveConfirmation = false
 
     var body: some View {
@@ -26,6 +27,18 @@ struct ToCookMenuView: View {
                 }
                 .padding(.horizontal)
 
+                // Generate Grocery List Button
+                Button {
+                    groceryState.prepareListGeneration(from: menu)
+                } label: {
+                    Label("Generate Grocery List", systemImage: "checklist")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+                .padding(.horizontal)
+
                 // Recipe List (as checklist)
                 VStack(spacing: 12) {
                     ForEach(menu.items) { item in
@@ -35,6 +48,12 @@ struct ToCookMenuView: View {
                 .padding(.horizontal)
             }
             .padding(.top)
+        }
+        .sheet(isPresented: Binding(
+            get: { groceryState.isShowingGenerateSheet },
+            set: { groceryState.isShowingGenerateSheet = $0 }
+        )) {
+            GenerateListSheet(menuId: menu.id)
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

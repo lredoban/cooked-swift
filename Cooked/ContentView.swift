@@ -24,7 +24,7 @@ struct ContentView: View {
                 }
                 .tag(AppTab.menu)
 
-            GroceryListView()
+            GroceryListView(selectedTab: $selectedTab)
                 .tabItem {
                     Label(AppTab.list.title, systemImage: AppTab.list.icon)
                 }

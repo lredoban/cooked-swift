@@ -40,7 +40,14 @@ struct MenuRecipe: Codable, Identifiable, Sendable {
 
 /// A menu with fully populated Recipe objects (not just IDs)
 /// Used for display in the UI after joining menu_recipes with recipes table
-struct MenuWithRecipes: Identifiable, Sendable {
+struct MenuWithRecipes: Identifiable, Sendable, Hashable {
+    static func == (lhs: MenuWithRecipes, rhs: MenuWithRecipes) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
     let id: UUID
     let userId: UUID
     var status: Menu.MenuStatus

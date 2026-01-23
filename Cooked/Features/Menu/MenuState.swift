@@ -39,6 +39,16 @@ final class MenuState {
     var selectedRecipeIds: Set<UUID> = []
     var isAddingRecipes = false
 
+    // MARK: - History State
+
+    var isShowingHistory = false
+    var archivedMenus: [MenuWithRecipes] = []
+    var isLoadingHistory = false
+    var selectedArchivedMenu: MenuWithRecipes? = nil
+
+    // Free tier limit for history
+    private let freeHistoryLimit = 3
+
     // MARK: - Computed Properties
 
     var currentMenu: MenuWithRecipes? {
@@ -279,6 +289,50 @@ final class MenuState {
         do {
             try await menuService.archiveMenu(menu.id)
             viewState = .empty
+        } catch {
+            self.error = error
+        }
+    }
+
+    // MARK: - History Actions
+
+    func openHistory() {
+        isShowingHistory = true
+        Task {
+            await loadArchivedMenus()
+        }
+    }
+
+    func closeHistory() {
+        isShowingHistory = false
+        selectedArchivedMenu = nil
+    }
+
+    func loadArchivedMenus() async {
+        isLoadingHistory = true
+
+        do {
+            // TODO: Check isPro status for unlimited access
+            let isPro = false
+            archivedMenus = try await menuService.fetchArchivedMenus(
+                limit: isPro ? nil : freeHistoryLimit
+            )
+        } catch {
+            self.error = error
+        }
+
+        isLoadingHistory = false
+    }
+
+    func selectArchivedMenu(_ menu: MenuWithRecipes) {
+        selectedArchivedMenu = menu
+    }
+
+    func reuseMenu(_ archivedMenu: MenuWithRecipes) async {
+        do {
+            let newMenu = try await menuService.reuseMenu(from: archivedMenu)
+            viewState = .planning(newMenu)
+            closeHistory()
         } catch {
             self.error = error
         }

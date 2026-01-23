@@ -30,6 +30,9 @@ struct MenuView: View {
             .sheet(isPresented: $state.isShowingRecipePicker) {
                 RecipePickerSheet()
             }
+            .sheet(isPresented: $state.isShowingHistory) {
+                MenuHistoryView()
+            }
         }
     }
 

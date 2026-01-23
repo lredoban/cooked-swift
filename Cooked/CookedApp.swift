@@ -12,6 +12,7 @@ struct CookedApp: App {
     @State private var supabaseService = SupabaseService.shared
     @State private var recipeState = RecipeState()
     @State private var menuState = MenuState()
+    @State private var groceryListState = GroceryListState()
 
     var body: some Scene {
         WindowGroup {
@@ -19,6 +20,7 @@ struct CookedApp: App {
                 .environment(supabaseService)
                 .environment(recipeState)
                 .environment(menuState)
+                .environment(groceryListState)
                 .task {
                     await initializeApp()
                 }

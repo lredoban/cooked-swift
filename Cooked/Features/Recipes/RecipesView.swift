@@ -22,12 +22,16 @@ struct RecipesView: View {
                 }
             }
             .navigationTitle("Recipes")
+            .searchable(text: $state.searchText, prompt: "Search recipes")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        recipeState.startImport()
-                    } label: {
-                        Image(systemName: "plus")
+                    HStack(spacing: 8) {
+                        SortPicker(selection: $state.sortOption)
+                        Button {
+                            recipeState.startImport()
+                        } label: {
+                            Image(systemName: "plus")
+                        }
                     }
                 }
             }
@@ -74,25 +78,87 @@ struct RecipesView: View {
     private var recipeGridView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text("\(recipeState.recipeCount) recipes")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal)
+                // Tag filter bar
+                if !recipeState.allTags.isEmpty {
+                    TagFilterBar(
+                        tags: recipeState.allTags,
+                        selectedTag: recipeState.selectedTag,
+                        onTagTap: { recipeState.toggleTag($0) }
+                    )
+                }
 
-                LazyVGrid(columns: columns, spacing: 16) {
-                    ForEach(recipeState.recipes) { recipe in
-                        NavigationLink(value: recipe) {
-                            RecipeCard(recipe: recipe)
+                // Results count
+                HStack {
+                    Text(resultsText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    if hasActiveFilters {
+                        Button("Clear") {
+                            recipeState.clearFilters()
                         }
-                        .buttonStyle(.plain)
+                        .font(.subheadline)
                     }
                 }
                 .padding(.horizontal)
+
+                // Recipe grid or no results
+                if recipeState.filteredRecipes.isEmpty {
+                    noResultsView
+                } else {
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(recipeState.filteredRecipes) { recipe in
+                            NavigationLink(value: recipe) {
+                                RecipeCard(recipe: recipe)
+                            }
+                            .buttonStyle(.plain)
+                            .contentShape(Rectangle()) // Constrain tap area to visible bounds
+                        }
+                    }
+                    .padding(.horizontal)
+                }
             }
             .padding(.top)
         }
         .refreshable {
             await recipeState.loadRecipes()
+        }
+    }
+
+    private var noResultsView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 40))
+                .foregroundStyle(.secondary)
+
+            Text("No recipes found")
+                .font(.headline)
+
+            Text("Try adjusting your search or filters")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            Button("Clear Filters") {
+                recipeState.clearFilters()
+            }
+            .buttonStyle(.bordered)
+            .padding(.top, 4)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 60)
+    }
+
+    private var hasActiveFilters: Bool {
+        !recipeState.searchText.isEmpty || recipeState.selectedTag != nil
+    }
+
+    private var resultsText: String {
+        let filtered = recipeState.filteredRecipes.count
+        let total = recipeState.recipes.count
+        if hasActiveFilters {
+            return "\(filtered) of \(total) recipes"
+        } else {
+            return "\(total) recipes"
         }
     }
 }

@@ -179,6 +179,54 @@ actor MenuService {
             .eq("id", value: menuId.uuidString)
             .execute()
     }
+
+    // MARK: - Fetch Archived Menus
+
+    /// Fetches archived menus for history view
+    /// - Parameter limit: Optional limit for free tier (nil for unlimited)
+    func fetchArchivedMenus(limit: Int? = nil) async throws -> [MenuWithRecipes] {
+        guard let userId = await supabase.authUser?.id else {
+            throw MenuServiceError.unauthorized
+        }
+
+        let query = """
+        id, user_id, status, created_at, archived_at,
+        menu_recipes (id, recipe_id, is_cooked, recipes (*))
+        """
+
+        var request = supabase.client
+            .from("menus")
+            .select(query)
+            .eq("user_id", value: userId.uuidString)
+            .eq("status", value: "archived")
+            .order("archived_at", ascending: false)
+
+        if let limit = limit {
+            request = request.limit(limit)
+        }
+
+        let menus: [MenuWithRecipesDTO] = try await request
+            .execute()
+            .value
+
+        return menus.map { $0.toMenuWithRecipes() }
+    }
+
+    // MARK: - Reuse Menu
+
+    /// Creates a new planning menu from an archived menu's recipes
+    func reuseMenu(from archivedMenu: MenuWithRecipes) async throws -> MenuWithRecipes {
+        // Create new menu
+        var newMenu = try await createMenu()
+
+        // Add all recipes from archived menu
+        for item in archivedMenu.items {
+            let newItem = try await addRecipeToMenu(menuId: newMenu.id, recipe: item.recipe)
+            newMenu.items.append(newItem)
+        }
+
+        return newMenu
+    }
 }
 
 // MARK: - DTOs for Supabase Operations
