@@ -33,6 +33,8 @@ struct ActiveGroceryListView: View {
                         .tint(.green)
                 }
                 .padding(.horizontal)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Shopping progress: \(groceryState.checkedCount) of \(groceryState.totalCount) items checked, \(Int(groceryState.progress * 100)) percent complete")
 
                 // Items by Category
                 VStack(spacing: 16) {
@@ -86,15 +88,23 @@ struct CategorySection: View {
     let category: Ingredient.IngredientCategory
     let items: [GroceryItem]
 
+    private var checkedCount: Int {
+        items.filter(\.isChecked).count
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Category Header
             HStack(spacing: 8) {
                 Image(systemName: category.iconName)
                     .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
                 Text(category.displayName)
                     .font(.headline)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(category.displayName) section, \(checkedCount) of \(items.count) items checked")
+            .accessibilityAddTraits(.isHeader)
 
             // Items
             VStack(spacing: 0) {
@@ -147,6 +157,21 @@ struct GroceryItemRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint(item.isChecked ? "Double tap to uncheck" : "Double tap to check off")
+        .accessibilityAddTraits(.isButton)
+    }
+
+    private var accessibilityLabel: String {
+        var label = item.text
+        if let qty = item.quantity {
+            label += ", \(qty)"
+        }
+        if item.isChecked {
+            label += ", checked"
+        }
+        return label
     }
 }
 

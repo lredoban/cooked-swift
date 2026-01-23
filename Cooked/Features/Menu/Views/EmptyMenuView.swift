@@ -11,10 +11,12 @@ struct EmptyMenuView: View {
             Image(systemName: "fork.knife")
                 .font(.system(size: 60))
                 .foregroundStyle(.orange)
+                .accessibilityHidden(true)
 
             Text("What do you want to cook?")
                 .font(.title2)
                 .fontWeight(.semibold)
+                .accessibilityAddTraits(.isHeader)
 
             Text("Build your menu for the week")
                 .foregroundStyle(.secondary)
@@ -34,6 +36,8 @@ struct EmptyMenuView: View {
                     .cornerRadius(12)
             }
             .padding(.horizontal, 40)
+            .accessibilityLabel("Add recipes to menu")
+            .accessibilityHint("Opens recipe picker to select recipes for your weekly menu")
 
             Spacer()
 
@@ -43,6 +47,8 @@ struct EmptyMenuView: View {
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .padding(.bottom, 20)
+            .accessibilityLabel("View past menus")
+            .accessibilityHint("Shows your previously cooked menus")
         }
     }
 }

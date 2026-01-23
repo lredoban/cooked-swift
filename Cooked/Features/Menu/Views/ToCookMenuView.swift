@@ -26,6 +26,8 @@ struct ToCookMenuView: View {
                         .tint(.orange)
                 }
                 .padding(.horizontal)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Cooking progress: \(menu.cookedCount) of \(menu.totalCount) recipes cooked, \(Int(menu.progress * 100)) percent complete")
 
                 // Generate Grocery List Button
                 Button {
@@ -38,6 +40,7 @@ struct ToCookMenuView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(.orange)
                 .padding(.horizontal)
+                .accessibilityHint("Creates a shopping list from your menu recipes")
 
                 // Recipe List (as checklist)
                 VStack(spacing: 12) {
@@ -105,11 +108,13 @@ struct ToCookRecipeRow: View {
                     .font(.title2)
                     .foregroundStyle(item.isCooked ? .green : .secondary)
             }
+            .accessibilityLabel(item.isCooked ? "Mark \(item.recipe.title) as not cooked" : "Mark \(item.recipe.title) as cooked")
 
             AsyncImageView(url: item.recipe.imageUrl)
                 .frame(width: 60, height: 60)
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(8)
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.recipe.title)
@@ -130,6 +135,8 @@ struct ToCookRecipeRow: View {
         .padding()
         .background(Color(.secondarySystemBackground))
         .cornerRadius(12)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("\(item.recipe.title), \(item.isCooked ? "cooked" : "not yet cooked")")
     }
 }
 

@@ -1,11 +1,18 @@
 import Foundation
 
+/// Errors that can occur during menu operations.
 enum MenuServiceError: LocalizedError {
+    /// User is not authenticated
     case unauthorized
+    /// The requested menu was not found
     case menuNotFound
+    /// Failed to create a new menu
     case createFailed(String)
+    /// Failed to update menu status or properties
     case updateFailed(String)
+    /// Failed to delete menu
     case deleteFailed(String)
+    /// Failed to add recipe to menu
     case addRecipeFailed(String)
 
     var errorDescription: String? {
@@ -26,7 +33,25 @@ enum MenuServiceError: LocalizedError {
     }
 }
 
+/// Service for menu CRUD operations and state management.
+///
+/// This actor handles all menu-related database operations including:
+/// - Creating and deleting menus
+/// - Adding/removing recipes from menus
+/// - Transitioning menu status (planning → to_cook → archived)
+/// - Fetching active and archived menus
+///
+/// ## Menu State Machine
+///
+/// ```
+/// EMPTY ──[add recipe]──▶ PLANNING ──[generate list]──▶ TO COOK ──[all cooked]──▶ ARCHIVED
+/// ```
+///
+/// ## Thread Safety
+///
+/// This is an actor, so all methods are isolated and thread-safe.
 actor MenuService {
+    /// Shared singleton instance
     static let shared = MenuService()
 
     private let supabase = SupabaseService.shared
