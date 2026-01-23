@@ -1,25 +1,26 @@
 # Development Roadmap (Swift/SwiftUI)
 
-**Project:** Cooked - Recipe Menu App (iOS Native)
-**Based on:** PRD v1.0 (January 2026)
-**Tech Stack:** Swift 5.9 + SwiftUI + Supabase + RevenueCat
+**Project:** Cooked - Recipe Menu App (iOS Native) **Based on:** PRD v1.0
+(January 2026) **Tech Stack:** Swift 5.9 + SwiftUI + Supabase + RevenueCat
 
 ---
 
 ## Overview
 
-This roadmap adapts the original React Native/Expo roadmap for native iOS development with Swift and SwiftUI. The app shares the same Supabase database as the Expo version, so database setup is already complete.
+This roadmap adapts the original React Native/Expo roadmap for native iOS
+development with Swift and SwiftUI. The app shares the same Supabase database as
+the Expo version, so database setup is already complete.
 
 ### Key Differences from Expo Version
 
-| Aspect | Expo/React Native | Swift/SwiftUI |
-|--------|-------------------|---------------|
-| State Management | React Context | `@Observable` (iOS 17+) |
-| Navigation | Expo Router | NavigationStack |
-| Styling | NativeWind/Tailwind | Native SwiftUI |
-| Package Manager | npm | Swift Package Manager |
-| Database | supabase-js | supabase-swift |
-| Purchases | react-native-purchases | purchases-ios |
+| Aspect           | Expo/React Native      | Swift/SwiftUI           |
+| ---------------- | ---------------------- | ----------------------- |
+| State Management | React Context          | `@Observable` (iOS 17+) |
+| Navigation       | Expo Router            | NavigationStack         |
+| Styling          | NativeWind/Tailwind    | Native SwiftUI          |
+| Package Manager  | npm                    | Swift Package Manager   |
+| Database         | supabase-js            | supabase-swift          |
+| Purchases        | react-native-purchases | purchases-ios           |
 
 ---
 
@@ -28,9 +29,11 @@ This roadmap adapts the original React Native/Expo roadmap for native iOS develo
 **Goal:** Project structure and Supabase connection (database already exists)
 
 ### Scope
+
 - [x] Create Xcode project with SwiftUI
 - [x] Add supabase-swift via SPM
-- [x] Set up project folder structure (App/, Models/, Services/, Features/, Configuration/)
+- [x] Set up project folder structure (App/, Models/, Services/, Features/,
+      Configuration/)
 - [x] Create `@Observable` models matching Supabase schema
 - [x] Configure Supabase Swift client (SupabaseService.swift)
 - [x] Set up 3-tab navigation (Recipes, Menu, List)
@@ -40,11 +43,13 @@ This roadmap adapts the original React Native/Expo roadmap for native iOS develo
 - [x] Test Supabase connection
 
 ### Deliverables
+
 - App opens with 3-tab navigation
 - Supabase client configured and connecting
 - Models match existing database schema
 
 ### Review Checkpoint
+
 - App builds and runs on simulator
 - Can authenticate with Supabase
 - Navigation structure matches PRD
@@ -56,6 +61,7 @@ This roadmap adapts the original React Native/Expo roadmap for native iOS develo
 **Goal:** Import recipes from URLs and save them to the library
 
 ### Scope
+
 - **Recipe Import (Primary Focus)**
   - [x] URL input sheet with paste support
   - [x] Call backend Extract API
@@ -78,14 +84,16 @@ This roadmap adapts the original React Native/Expo roadmap for native iOS develo
 **Endpoint:** `POST /api/recipes/extract`
 
 **Request:**
+
 ```json
 {
   "url": "https://example.com/recipe-page",
-  "sourceType": "url"  // optional: "url" | "video"
+  "sourceType": "url" // optional: "url" | "video"
 }
 ```
 
 **Response (Success):**
+
 ```json
 {
   "success": true,
@@ -106,6 +114,7 @@ This roadmap adapts the original React Native/Expo roadmap for native iOS develo
 ```
 
 **Error Response:**
+
 ```json
 {
   "statusCode": 400,
@@ -114,6 +123,7 @@ This roadmap adapts the original React Native/Expo roadmap for native iOS develo
 ```
 
 ### Swift Implementation
+
 ```swift
 // Services/RecipeImportService.swift
 struct ExtractRequest: Encodable {
@@ -170,6 +180,7 @@ func extractRecipe(from url: String) async throws -> ExtractedRecipe {
 ```
 
 ### SwiftUI Patterns
+
 ```swift
 // Recipe grid
 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
@@ -193,6 +204,7 @@ struct ImportRecipeSheet: View {
 ```
 
 ### Deliverables
+
 - [x] Import from TikTok, Instagram, YouTube, URLs
 - [x] Preview and edit before saving
 - [x] Recipe saved to Supabase
@@ -206,6 +218,7 @@ struct ImportRecipeSheet: View {
 **Goal:** Implement the menu state machine
 
 ### Scope
+
 - **MenuState Observable**
   - Track current menu state (empty/planning/to_cook)
   - Handle state transitions
@@ -221,6 +234,7 @@ struct ImportRecipeSheet: View {
   - Confirmation sheet
 
 ### SwiftUI Patterns
+
 ```swift
 @Observable
 class MenuState {
@@ -233,6 +247,7 @@ class MenuState {
 ```
 
 ### Deliverables
+
 - Full menu state machine working
 - Add/remove recipes from menu
 - Mark recipes as cooked
@@ -245,6 +260,7 @@ class MenuState {
 **Goal:** Complete the core user flow
 
 ### Scope
+
 - **Ingredient Consolidation**
   - Merge ingredients from menu recipes
   - Group by category
@@ -259,6 +275,7 @@ class MenuState {
   - Share as text
 
 ### SwiftUI Patterns
+
 ```swift
 // Grouped list
 ForEach(groceryList.sortedCategories, id: \.self) { category in
@@ -271,6 +288,7 @@ ForEach(groceryList.sortedCategories, id: \.self) { category in
 ```
 
 ### Deliverables
+
 - Grocery list generation from menu
 - Staple check flow
 - Shareable list format
@@ -282,6 +300,7 @@ ForEach(groceryList.sortedCategories, id: \.self) { category in
 **Goal:** Make library browsable and searchable
 
 ### Scope
+
 - **Search**
   - `.searchable()` modifier
   - Real-time filtering
@@ -294,6 +313,7 @@ ForEach(groceryList.sortedCategories, id: \.self) { category in
   - Menu picker (Recent, A-Z, Most Cooked)
 
 ### SwiftUI Patterns
+
 ```swift
 .searchable(text: $searchText, prompt: "Search recipes...")
 
@@ -307,6 +327,7 @@ ScrollView(.horizontal) {
 ```
 
 ### Deliverables
+
 - Search by title
 - Filter by tags
 - Sort options working
@@ -318,6 +339,7 @@ ScrollView(.horizontal) {
 **Goal:** View and reuse past menus
 
 ### Scope
+
 - **History View**
   - List of archived menus
   - Date, recipe count, completion status
@@ -330,6 +352,7 @@ ScrollView(.horizontal) {
   - Show last 3 for free users
 
 ### Deliverables
+
 - Menu history accessible
 - Reuse functionality working
 - Free tier limits enforced
@@ -341,6 +364,7 @@ ScrollView(.horizontal) {
 **Goal:** Implement freemium subscription
 
 ### Scope
+
 - **RevenueCat Setup**
   - [x] Add RevenueCat SDK via SPM
   - [x] Configure in Xcode
@@ -368,6 +392,7 @@ ScrollView(.horizontal) {
   - [x] Upgrade prompt in MenuHistoryView
 
 ### Deliverables
+
 - [x] RevenueCat SDK integrated
 - [x] Anonymous auth working
 - [x] Limits enforced with upgrade prompts
@@ -381,6 +406,7 @@ ScrollView(.horizontal) {
 **Goal:** Improve user flows and fix friction points
 
 ### Scope
+
 - **Flow Review**
   - Audit core flows (import → menu → grocery list)
   - Identify and fix friction points
@@ -396,17 +422,19 @@ ScrollView(.horizontal) {
   - Clear calls-to-action
 
 ### Deliverables
+
 - Smooth core user flows
 - Onboarding implemented
 - Clear error handling throughout
 
 ---
 
-## Phase 8: Analytics (PostHog)
+## Phase 8: Analytics (PostHog) [WON'T DO NOT USEFUL TO CONTEST]
 
 **Goal:** Understand how users use the app
 
 ### Scope
+
 - **SDK Integration**
   - Add PostHog SDK via SPM
   - Configure in app startup
@@ -423,6 +451,7 @@ ScrollView(.horizontal) {
   - Retention metrics
 
 ### Deliverables
+
 - PostHog integrated
 - Key events tracked
 - Dashboard configured
@@ -434,6 +463,7 @@ ScrollView(.horizontal) {
 **Goal:** Visual refinement and animations
 
 ### Scope
+
 - **Loading States**
   - Loading skeletons for lists
   - Placeholder shimmer effects
@@ -449,6 +479,7 @@ ScrollView(.horizontal) {
   - Color usage review
 
 ### Deliverables
+
 - Polished loading states
 - Smooth animations
 - Consistent visual design
@@ -460,6 +491,7 @@ ScrollView(.horizontal) {
 **Goal:** Production hardening
 
 ### Scope
+
 - **Security**
   - Supabase RLS policy audit
   - Verify all tables have appropriate policies
@@ -470,12 +502,13 @@ ScrollView(.horizontal) {
   - Smooth scrolling with many recipes
   - Image caching optimization
 
-- **Offline Support**
+- **SIMPLE Offline Support**
   - Cache recipes locally
   - Sync when online
   - Handle offline gracefully
 
 ### Deliverables
+
 - RLS policies verified
 - Performance targets met
 - Offline support working
@@ -487,6 +520,7 @@ ScrollView(.horizontal) {
 **Goal:** Prepare for App Store submission
 
 ### Scope
+
 - **App Assets**
   - App icon (all sizes)
   - Screenshots for all device sizes
@@ -504,6 +538,7 @@ ScrollView(.horizontal) {
   - App Store submission
 
 ### Deliverables
+
 - All assets ready
 - Store listing complete
 - App submitted
@@ -514,9 +549,11 @@ ScrollView(.horizontal) {
 
 **Goal:** Tasks that can be run by cloud agents asynchronously
 
-These tasks don't require local simulator testing and can be worked on independently:
+These tasks don't require local simulator testing and can be worked on
+independently:
 
 ### Scope
+
 - **Documentation**
   - [x] Code documentation updates (docstrings for Models and Services)
   - [x] README improvements (comprehensive setup guide, architecture docs)
@@ -542,6 +579,7 @@ These tasks don't require local simulator testing and can be worked on independe
   - [x] Terms of service draft
 
 ### Deliverables
+
 - `web-content/landing-page.md` - Full landing page copy
 - `web-content/privacy-policy.md` - Privacy policy draft
 - `web-content/terms-of-service.md` - Terms of service draft
@@ -549,6 +587,7 @@ These tasks don't require local simulator testing and can be worked on independe
 - `CookedTests/ServiceTests.swift` - Service and error tests
 
 ### Notes
+
 These tasks can be picked up anytime and don't block other phases.
 
 ---
@@ -557,7 +596,8 @@ These tasks can be picked up anytime and don't block other phases.
 
 **Goal:** Next.js app for API improvements and public website
 
-This is a separate repo/project that supports the iOS app. Currently using Nitro for extraction, will migrate to Next.js.
+This is a separate repo/project that supports the iOS app. Currently using Nitro
+for extraction, will migrate to Next.js.
 
 ### Scope
 
@@ -582,11 +622,13 @@ This is a separate repo/project that supports the iOS app. Currently using Nitro
   - Open Graph images for social sharing
 
 ### Tech Stack
+
 - Nuxt 3 (Vue)
 - Supabase (same database as iOS app)
 - Vercel deployment
 
 ### Folder Structure
+
 ```
 Cooked/
 ├── Cooked/              # iOS app (unchanged)
@@ -601,7 +643,9 @@ Cooked/
 ```
 
 ### Notes
-This runs in parallel with iOS development. Website content (copy) can be prepared in Cloud Phase, then implemented here.
+
+This runs in parallel with iOS development. Website content (copy) can be
+prepared in Cloud Phase, then implemented here.
 
 ---
 
@@ -609,7 +653,8 @@ This runs in parallel with iOS development. Website content (copy) can be prepar
 
 Items to implement later when ready:
 
-- [ ] **RevenueCat Paywall UI** - Use RevenueCat's native paywall (waiting for credentials)
+- [ ] **RevenueCat Paywall UI** - Use RevenueCat's native paywall (waiting for
+      credentials)
 - [ ] **Annual Plan** - Add yearly subscription option to RevenueCat
 - [ ] **Code Quality Tooling** - Set up SwiftLint and SwiftFormat
 
@@ -618,6 +663,7 @@ Items to implement later when ready:
 ## Appendix: Swift/SwiftUI Patterns
 
 ### Observable State
+
 ```swift
 @Observable
 class RecipeState {
@@ -633,6 +679,7 @@ class RecipeState {
 ```
 
 ### Async/Await with Supabase
+
 ```swift
 func fetchRecipes() async throws -> [Recipe] {
     try await client
@@ -645,6 +692,7 @@ func fetchRecipes() async throws -> [Recipe] {
 ```
 
 ### Navigation
+
 ```swift
 NavigationStack {
     List(recipes) { recipe in
@@ -659,6 +707,7 @@ NavigationStack {
 ```
 
 ### Environment
+
 ```swift
 @main
 struct CookedApp: App {
@@ -681,4 +730,6 @@ struct SomeView: View {
 
 ## Timeline Notes
 
-No specific timelines included. Each phase should be completed thoroughly before moving to the next. The shared Supabase backend means Phase 0 is significantly faster than the Expo version.
+No specific timelines included. Each phase should be completed thoroughly before
+moving to the next. The shared Supabase backend means Phase 0 is significantly
+faster than the Expo version.
