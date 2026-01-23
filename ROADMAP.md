@@ -376,35 +376,235 @@ ScrollView(.horizontal) {
 
 ---
 
-## Phase 7: Polish & App Store
+## Phase 7: UX Polish
 
-**Goal:** Prepare for App Store submission
+**Goal:** Improve user flows and fix friction points
 
 ### Scope
+- **Flow Review**
+  - Audit core flows (import → menu → grocery list)
+  - Identify and fix friction points
+  - Improve error states and feedback
+
+- **Onboarding**
+  - First-launch experience
+  - Guide users through core value proposition
+  - Explain menu-first concept
+
+- **Empty States**
+  - Meaningful empty state messaging
+  - Clear calls-to-action
+
+### Deliverables
+- Smooth core user flows
+- Onboarding implemented
+- Clear error handling throughout
+
+---
+
+## Phase 8: Analytics (PostHog)
+
+**Goal:** Understand how users use the app
+
+### Scope
+- **SDK Integration**
+  - Add PostHog SDK via SPM
+  - Configure in app startup
+
+- **Event Tracking**
+  - Recipe import (success/failure, source type)
+  - Menu creation and completion
+  - Grocery list generation
+  - Feature usage patterns
+
+- **Analysis Setup**
+  - Funnel analysis (import → menu → cook)
+  - User session tracking
+  - Retention metrics
+
+### Deliverables
+- PostHog integrated
+- Key events tracked
+- Dashboard configured
+
+---
+
+## Phase 9: UI Polish
+
+**Goal:** Visual refinement and animations
+
+### Scope
+- **Loading States**
+  - Loading skeletons for lists
+  - Placeholder shimmer effects
+
+- **Animations**
+  - Smooth transitions with `.animation()`
+  - Meaningful micro-interactions
+  - State change animations
+
+- **Visual Consistency**
+  - Typography audit
+  - Spacing consistency
+  - Color usage review
+
+### Deliverables
+- Polished loading states
+- Smooth animations
+- Consistent visual design
+
+---
+
+## Phase 10: Security & Performance
+
+**Goal:** Production hardening
+
+### Scope
+- **Security**
+  - Supabase RLS policy audit
+  - Verify all tables have appropriate policies
+  - Test edge cases
+
 - **Performance**
   - App launch < 2 seconds
   - Smooth scrolling with many recipes
-  - Image caching with AsyncImage
+  - Image caching optimization
 
 - **Offline Support**
   - Cache recipes locally
   - Sync when online
-
-- **Polish**
-  - Smooth animations with `.animation()`
-  - Loading skeletons
-  - Error handling
-
-- **App Store**
-  - App icon
-  - Screenshots
-  - Privacy policy
-  - TestFlight submission
+  - Handle offline gracefully
 
 ### Deliverables
+- RLS policies verified
 - Performance targets met
 - Offline support working
-- Ready for TestFlight/App Store
+
+---
+
+## Phase 11: App Store Preparation (Deferred)
+
+**Goal:** Prepare for App Store submission
+
+### Scope
+- **App Assets**
+  - App icon (all sizes)
+  - Screenshots for all device sizes
+  - App preview video (optional)
+
+- **Store Listing**
+  - App name and subtitle
+  - Description and keywords
+  - Privacy policy URL
+  - Support URL
+
+- **Submission**
+  - TestFlight internal testing
+  - TestFlight external beta
+  - App Store submission
+
+### Deliverables
+- All assets ready
+- Store listing complete
+- App submitted
+
+---
+
+## Cloud Phase (Ongoing)
+
+**Goal:** Tasks that can be run by cloud agents asynchronously
+
+These tasks don't require local simulator testing and can be worked on independently:
+
+### Scope
+- **Documentation**
+  - Code documentation updates
+  - README improvements
+
+- **Testing**
+  - Unit test coverage improvements
+  - Test documentation
+
+- **Accessibility**
+  - VoiceOver label audit
+  - Dynamic type support verification
+
+- **Code Quality**
+  - Unused code removal
+  - Code comments cleanup
+
+- **Website Content** (Markdown files for landing page)
+  - Hero section copy
+  - App features and benefits
+  - Pricing section content
+  - SEO metadata
+  - Privacy policy draft
+  - Terms of service draft
+
+### Notes
+These tasks can be picked up anytime and don't block other phases.
+
+---
+
+## Backend & Web (Ongoing)
+
+**Goal:** Next.js app for API improvements and public website
+
+This is a separate repo/project that supports the iOS app. Currently using Nitro for extraction, will migrate to Next.js.
+
+### Scope
+
+- **Recipe Extraction (API)**
+  - Improve extraction quality
+  - Better handling of video sources (TikTok, Instagram, YouTube)
+  - Error handling and fallbacks
+
+- **Website (Frontend)**
+  - Landing page (hero, features, pricing)
+  - Blog for SEO content
+  - Legal pages (CGV, privacy policy, terms)
+  - App Store / download links
+
+- **Shareable Grocery Lists**
+  - Public URLs for grocery lists (no auth required)
+  - Real-time sync (family can check items together)
+  - QR code generation for easy sharing
+
+- **Shareable Recipes** (Future)
+  - Public recipe pages
+  - Open Graph images for social sharing
+
+### Tech Stack
+- Nuxt 3 (Vue)
+- Supabase (same database as iOS app)
+- Vercel deployment
+
+### Folder Structure
+```
+Cooked/
+├── Cooked/              # iOS app (unchanged)
+├── Cooked.xcodeproj     # (unchanged)
+├── web/                 # Nuxt website (new)
+│   ├── nuxt.config.ts
+│   ├── pages/
+│   └── server/api/      # extraction API
+├── CLAUDE.md
+├── ROADMAP.md
+└── ...
+```
+
+### Notes
+This runs in parallel with iOS development. Website content (copy) can be prepared in Cloud Phase, then implemented here.
+
+---
+
+## Backlog / Future
+
+Items to implement later when ready:
+
+- [ ] **RevenueCat Paywall UI** - Use RevenueCat's native paywall (waiting for credentials)
+- [ ] **Annual Plan** - Add yearly subscription option to RevenueCat
+- [ ] **Code Quality Tooling** - Set up SwiftLint and SwiftFormat
 
 ---
 

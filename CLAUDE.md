@@ -193,12 +193,18 @@ See `ROADMAP.md` for detailed phase breakdown.
 
 - **Phase 0:** Foundation & Setup ✅
 - **Phase 1:** Recipe Import & Core CRUD ✅
-- **Phase 2:** Menu System (Core Product) ⬅️ Current
-- **Phase 3:** Grocery List Generation
-- **Phase 4:** Search & Filtering
-- **Phase 5:** Menu History & Reuse
-- **Phase 6:** Monetization (RevenueCat)
-- **Phase 7:** Polish & App Store
+- **Phase 2:** Menu System (Core Product) ✅
+- **Phase 3:** Grocery List Generation ✅
+- **Phase 4:** Search & Filtering ✅
+- **Phase 5:** Menu History & Reuse ✅
+- **Phase 6:** Monetization (RevenueCat) ✅
+- **Phase 7:** UX Polish ⬅️ Current
+- **Phase 8:** Analytics (PostHog)
+- **Phase 9:** UI Polish
+- **Phase 10:** Security & Performance
+- **Phase 11:** App Store Preparation (Deferred)
+- **Cloud Phase:** Ongoing async tasks
+- **Backend & Web:** Ongoing - Next.js API + website
 
 ## DO NOT
 
