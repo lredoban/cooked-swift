@@ -2,6 +2,7 @@ import SwiftUI
 
 struct EmptyMenuView: View {
     @Environment(MenuState.self) private var menuState
+    @Environment(SubscriptionState.self) private var subscriptionState
 
     var body: some View {
         VStack(spacing: 20) {
@@ -37,7 +38,7 @@ struct EmptyMenuView: View {
             Spacer()
 
             Button("View past menus") {
-                menuState.openHistory()
+                menuState.openHistory(historyLimit: subscriptionState.menuHistoryLimit())
             }
             .font(.subheadline)
             .foregroundStyle(.secondary)
@@ -49,4 +50,5 @@ struct EmptyMenuView: View {
 #Preview {
     EmptyMenuView()
         .environment(MenuState())
+        .environment(SubscriptionState())
 }

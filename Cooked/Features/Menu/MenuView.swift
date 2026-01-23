@@ -70,4 +70,5 @@ struct MenuView: View {
     MenuView()
         .environment(MenuState())
         .environment(RecipeState())
+        .environment(SubscriptionState())
 }

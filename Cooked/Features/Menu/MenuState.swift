@@ -46,9 +46,6 @@ final class MenuState {
     var isLoadingHistory = false
     var selectedArchivedMenu: MenuWithRecipes? = nil
 
-    // Free tier limit for history
-    private let freeHistoryLimit = 3
-
     // MARK: - Computed Properties
 
     var currentMenu: MenuWithRecipes? {
@@ -123,6 +120,18 @@ final class MenuState {
     func closeRecipePicker() {
         isShowingRecipePicker = false
         selectedRecipeIds = []
+
+        // If menu is empty after closing picker, delete it and return to empty state
+        if case .planning(let menu) = viewState, menu.items.isEmpty {
+            Task {
+                do {
+                    try await menuService.deleteMenu(menu.id)
+                    viewState = .empty
+                } catch {
+                    self.error = error
+                }
+            }
+        }
     }
 
     func toggleRecipeSelection(_ recipeId: UUID) {
@@ -296,27 +305,24 @@ final class MenuState {
 
     // MARK: - History Actions
 
-    func openHistory() {
+    func openHistory(historyLimit: Int?) {
         isShowingHistory = true
         Task {
-            await loadArchivedMenus()
+            await loadArchivedMenus(historyLimit: historyLimit)
         }
     }
 
     func closeHistory() {
         isShowingHistory = false
         selectedArchivedMenu = nil
+        archivedMenus = []  // Clear to free memory
     }
 
-    func loadArchivedMenus() async {
+    func loadArchivedMenus(historyLimit: Int?) async {
         isLoadingHistory = true
 
         do {
-            // TODO: Check isPro status for unlimited access
-            let isPro = false
-            archivedMenus = try await menuService.fetchArchivedMenus(
-                limit: isPro ? nil : freeHistoryLimit
-            )
+            archivedMenus = try await menuService.fetchArchivedMenus(limit: historyLimit)
         } catch {
             self.error = error
         }

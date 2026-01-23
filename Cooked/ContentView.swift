@@ -35,4 +35,9 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environment(SupabaseService.shared)
+        .environment(RecipeState())
+        .environment(MenuState())
+        .environment(GroceryListState())
+        .environment(SubscriptionState())
 }

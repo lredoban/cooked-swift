@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		9E09AB1C2F22B564000D3506 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09AB1B2F22B564000D3506 /* Supabase */; };
+		9E09AB6B2F2384E4000D3506 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09AB6A2F2384E4000D3506 /* RevenueCat */; };
+		9E09AB6D2F2384E4000D3506 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09AB6C2F2384E4000D3506 /* RevenueCatUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,7 +71,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E09AB6B2F2384E4000D3506 /* RevenueCat in Frameworks */,
 				9E09AB1C2F22B564000D3506 /* Supabase in Frameworks */,
+				9E09AB6D2F2384E4000D3506 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -131,6 +135,8 @@
 			name = Cooked;
 			packageProductDependencies = (
 				9E09AB1B2F22B564000D3506 /* Supabase */,
+				9E09AB6A2F2384E4000D3506 /* RevenueCat */,
+				9E09AB6C2F2384E4000D3506 /* RevenueCatUI */,
 			);
 			productName = Cooked;
 			productReference = 9E09AACC2F22AA03000D3506 /* Cooked.app */;
@@ -216,6 +222,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				9E09AB1A2F22B564000D3506 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				9E09AB692F2384E4000D3506 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9E09AACD2F22AA03000D3506 /* Products */;
@@ -618,6 +625,14 @@
 				minimumVersion = 2.5.1;
 			};
 		};
+		9E09AB692F2384E4000D3506 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.55.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -625,6 +640,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9E09AB1A2F22B564000D3506 /* XCRemoteSwiftPackageReference "supabase-swift" */;
 			productName = Supabase;
+		};
+		9E09AB6A2F2384E4000D3506 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E09AB692F2384E4000D3506 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+		9E09AB6C2F2384E4000D3506 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E09AB692F2384E4000D3506 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

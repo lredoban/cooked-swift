@@ -2,7 +2,13 @@ import SwiftUI
 
 struct MenuHistoryView: View {
     @Environment(MenuState.self) private var menuState
+    @Environment(SubscriptionState.self) private var subscriptionState
     @Environment(\.dismiss) private var dismiss
+
+    private var shouldShowUpgradePrompt: Bool {
+        !subscriptionState.isPro &&
+        menuState.archivedMenus.count >= FreemiumLimits.freeMenuHistoryLimit
+    }
 
     var body: some View {
         NavigationStack {
@@ -29,6 +35,12 @@ struct MenuHistoryView: View {
                 set: { menuState.selectedArchivedMenu = $0 }
             )) { menu in
                 ArchivedMenuDetailView(menu: menu)
+            }
+            .sheet(isPresented: Binding(
+                get: { subscriptionState.isShowingPaywall },
+                set: { subscriptionState.isShowingPaywall = $0 }
+            )) {
+                PaywallView()
             }
         }
     }
@@ -65,17 +77,30 @@ struct MenuHistoryView: View {
             }
 
             // Show upgrade prompt for free tier
-            if menuState.archivedMenus.count >= 3 {
+            if shouldShowUpgradePrompt {
                 Section {
-                    HStack {
-                        Image(systemName: "star.fill")
-                            .foregroundStyle(.yellow)
-                        Text("Upgrade to Pro for unlimited history")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                    Button {
+                        subscriptionState.showPaywall()
+                    } label: {
+                        HStack {
+                            Image(systemName: "star.fill")
+                                .foregroundStyle(.yellow)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Upgrade to Pro")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                Text("Unlock unlimited menu history")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.vertical, 4)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+                    .buttonStyle(.plain)
                 }
             }
         }
@@ -150,4 +175,5 @@ struct MenuHistoryRow: View {
 #Preview {
     MenuHistoryView()
         .environment(MenuState())
+        .environment(SubscriptionState())
 }

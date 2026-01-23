@@ -13,6 +13,7 @@ struct CookedApp: App {
     @State private var recipeState = RecipeState()
     @State private var menuState = MenuState()
     @State private var groceryListState = GroceryListState()
+    @State private var subscriptionState = SubscriptionState()
 
     var body: some Scene {
         WindowGroup {
@@ -21,6 +22,7 @@ struct CookedApp: App {
                 .environment(recipeState)
                 .environment(menuState)
                 .environment(groceryListState)
+                .environment(subscriptionState)
                 .task {
                     await initializeApp()
                 }
@@ -28,12 +30,19 @@ struct CookedApp: App {
     }
 
     private func initializeApp() async {
-        let connected = await supabaseService.testConnection()
-        if connected {
-            await recipeState.loadRecipes()
-            await menuState.loadCurrentMenu()
-        } else {
-            print("[Cooked] Supabase connection failed")
+        // 1. Initialize Supabase (anonymous auth)
+        let connected = await supabaseService.initialize()
+
+        guard connected, let userId = supabaseService.authUser?.id else {
+            print("[Cooked] Failed to initialize Supabase")
+            return
         }
+
+        // 2. Configure RevenueCat with Supabase user ID
+        await subscriptionState.configure(userId: userId.uuidString)
+
+        // 3. Load app data
+        await recipeState.loadRecipes()
+        await menuState.loadCurrentMenu()
     }
 }

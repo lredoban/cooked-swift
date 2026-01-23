@@ -336,39 +336,43 @@ ScrollView(.horizontal) {
 
 ---
 
-## Phase 6: Monetization (RevenueCat)
+## Phase 6: Monetization (RevenueCat) ✅
 
 **Goal:** Implement freemium subscription
 
 ### Scope
 - **RevenueCat Setup**
-  - Configure in Xcode
-  - Set up products in dashboard
+  - [x] Add RevenueCat SDK via SPM
+  - [x] Configure in Xcode
+  - [x] Set up products in RevenueCat dashboard (via MCP)
+  - [x] Create "pro" entitlement
+  - [x] Create monthly subscription product ($4.99)
+  - [x] Create default offering and package
+
+- **Anonymous Auth**
+  - [x] Implement Supabase anonymous sign-in
+  - [x] Pass user ID to RevenueCat for tracking
+  - [x] Restore existing sessions
 
 - **Entitlement Checks**
-  - Recipe limit (15 for free)
-  - Import limit (5/month for free)
-  - History limit (3 for free)
+  - [x] Recipe limit (15 for free)
+  - [x] Import limit (5/month for free) - configured
+  - [x] History limit (3 for free)
+  - [x] Centralized FreemiumLimits.swift config
 
 - **Paywall UI**
-  - Native SwiftUI paywall
-  - Package selection
-  - Restore purchases
-
-### SwiftUI Patterns
-```swift
-// Check entitlement
-if revenueCat.isPro {
-    // Show pro content
-} else {
-    PaywallView(reason: .recipeLimit)
-}
-```
+  - [x] Native SwiftUI PaywallView
+  - [x] Pro benefits display
+  - [x] Purchase and restore buttons
+  - [x] Limit reached prompts in ImportRecipeSheet
+  - [x] Upgrade prompt in MenuHistoryView
 
 ### Deliverables
-- Purchases working in TestFlight
-- Limits properly enforced
-- Paywall UX clear
+- [x] RevenueCat SDK integrated
+- [x] Anonymous auth working
+- [x] Limits enforced with upgrade prompts
+- [x] Paywall UX clear
+- [ ] Test purchases in TestFlight (requires App Store Connect)
 
 ---
 

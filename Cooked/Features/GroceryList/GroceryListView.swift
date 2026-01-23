@@ -16,14 +16,6 @@ struct GroceryListView: View {
                     EmptyGroceryListView {
                         selectedTab = .menu
                     }
-                    .onAppear {
-                        // Reload when tab becomes visible
-                        if let menuId = menuState.currentMenu?.id {
-                            Task {
-                                await groceryState.loadGroceryList(menuId: menuId)
-                            }
-                        }
-                    }
 
                 case .active(let list):
                     ActiveGroceryListView(list: list)

@@ -12,12 +12,6 @@ final class SupabaseService {
     private(set) var authUser: Auth.User?
     var isAuthenticated: Bool { authUser != nil }
 
-    // Dev credentials for testing (remove in production)
-    #if DEBUG
-    private let devEmail = "test@cooked.dev"
-    private let devPassword = "testpassword123"
-    #endif
-
     private init() {
         client = SupabaseClient(
             supabaseURL: AppConfig.supabaseURL,
@@ -28,37 +22,45 @@ final class SupabaseService {
         )
     }
 
-    // MARK: - Connection Test
+    // MARK: - Initialization
 
-    func testConnection() async -> Bool {
-        guard AppConfig.isConfigured else { return false }
+    /// Initialize Supabase with anonymous auth
+    /// Returns true if successfully authenticated (restored session or new anonymous sign-in)
+    func initialize() async -> Bool {
+        guard AppConfig.isConfigured else {
+            print("[Cooked] Supabase not configured")
+            return false
+        }
 
+        // Try to restore existing session first
         do {
-            #if DEBUG
-            try await signInWithDevUser()
-            #endif
-
-            let _: [Recipe] = try await client
-                .from("recipes")
-                .select()
-                .limit(1)
-                .execute()
-                .value
-
+            let session = try await client.auth.session
+            authUser = session.user
+            print("[Cooked] Restored existing session for user: \(session.user.id)")
             return true
         } catch {
+            // No existing session, sign in anonymously
+            print("[Cooked] No existing session, signing in anonymously...")
+            return await signInAnonymously()
+        }
+    }
+
+    // MARK: - Anonymous Auth
+
+    /// Sign in anonymously - creates a new anonymous user
+    func signInAnonymously() async -> Bool {
+        do {
+            let session = try await client.auth.signInAnonymously()
+            authUser = session.user
+            print("[Cooked] Anonymous sign-in successful. User ID: \(session.user.id)")
+            return true
+        } catch {
+            print("[Cooked] Anonymous sign-in failed: \(error)")
             return false
         }
     }
 
-    // MARK: - Auth
-
-    #if DEBUG
-    func signInWithDevUser() async throws {
-        let session = try await client.auth.signIn(email: devEmail, password: devPassword)
-        authUser = session.user
-    }
-    #endif
+    // MARK: - Standard Auth (for future account linking)
 
     func signIn(email: String, password: String) async throws {
         let session = try await client.auth.signIn(email: email, password: password)

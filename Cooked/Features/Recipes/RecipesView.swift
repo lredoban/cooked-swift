@@ -167,4 +167,5 @@ struct RecipesView: View {
     RecipesView()
         .environment(RecipeState())
         .environment(SupabaseService.shared)
+        .environment(SubscriptionState())
 }

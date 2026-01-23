@@ -42,12 +42,17 @@ struct MenuRecipe: Codable, Identifiable, Sendable {
 /// Used for display in the UI after joining menu_recipes with recipes table
 struct MenuWithRecipes: Identifiable, Sendable, Hashable {
     static func == (lhs: MenuWithRecipes, rhs: MenuWithRecipes) -> Bool {
-        lhs.id == rhs.id
+        lhs.id == rhs.id &&
+        lhs.status == rhs.status &&
+        lhs.items == rhs.items
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+        hasher.combine(status)
+        hasher.combine(items)
     }
+
     let id: UUID
     let userId: UUID
     var status: Menu.MenuStatus
@@ -80,8 +85,17 @@ struct MenuWithRecipes: Identifiable, Sendable, Hashable {
 }
 
 /// A single recipe within a menu, with the full Recipe data
-struct MenuItemWithRecipe: Identifiable, Sendable {
+struct MenuItemWithRecipe: Identifiable, Sendable, Equatable, Hashable {
     let id: UUID           // menu_recipes.id (junction table ID)
     let recipe: Recipe     // Full recipe object
     var isCooked: Bool
+
+    static func == (lhs: MenuItemWithRecipe, rhs: MenuItemWithRecipe) -> Bool {
+        lhs.id == rhs.id && lhs.isCooked == rhs.isCooked
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(isCooked)
+    }
 }
