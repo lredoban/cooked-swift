@@ -13,6 +13,7 @@ struct MenuRecipeCard: View {
                     .background(Color.gray.opacity(0.1))
                     .clipped()
                     .cornerRadius(12)
+                    .accessibilityHidden(true)
 
                 Button {
                     Task {
@@ -25,6 +26,7 @@ struct MenuRecipeCard: View {
                         .foregroundStyle(.white, .black.opacity(0.6))
                 }
                 .padding(8)
+                .accessibilityLabel("Remove \(item.recipe.title) from menu")
             }
 
             Text(item.recipe.title)
@@ -33,6 +35,9 @@ struct MenuRecipeCard: View {
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(item.recipe.title)
+        .accessibilityHint(item.isCooked ? "Already cooked" : "Not yet cooked")
     }
 }
 

@@ -11,6 +11,7 @@ struct RecipeCard: View {
                 .background(Color.gray.opacity(0.1))
                 .clipped()
                 .cornerRadius(12)
+                .accessibilityHidden(true)
 
             Text(recipe.title)
                 .font(.subheadline)
@@ -25,6 +26,20 @@ struct RecipeCard: View {
                     .lineLimit(1)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint("Double tap to view recipe details")
+    }
+
+    private var accessibilityLabel: String {
+        var label = recipe.title
+        if let source = recipe.sourceName {
+            label += ", from \(source)"
+        }
+        if recipe.timesCooked > 0 {
+            label += ", cooked \(recipe.timesCooked) time\(recipe.timesCooked == 1 ? "" : "s")"
+        }
+        return label
     }
 }
 

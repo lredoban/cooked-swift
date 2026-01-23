@@ -1,22 +1,62 @@
 import Foundation
 
+/// A recipe saved in the user's library.
+///
+/// Recipes can be imported from URLs, videos (TikTok, Instagram, YouTube),
+/// or created manually. They contain ingredients, steps, and metadata
+/// for cooking and organization.
+///
+/// ## Topics
+///
+/// ### Creating Recipes
+/// - ``init(id:userId:title:sourceType:sourceUrl:sourceName:ingredients:steps:tags:imageUrl:createdAt:timesCooked:)``
+///
+/// ### Source Types
+/// - ``SourceType``
 struct Recipe: Codable, Identifiable, Sendable, Hashable {
+    /// Unique identifier for the recipe
     let id: UUID
+
+    /// ID of the user who owns this recipe
     let userId: UUID
+
+    /// Display title of the recipe
     var title: String
+
+    /// How the recipe was imported (video, URL, or manual entry)
     var sourceType: SourceType?
+
+    /// Original URL where the recipe was imported from
     var sourceUrl: String?
+
+    /// Name of the source (e.g., website name or content creator)
     var sourceName: String?
+
+    /// List of ingredients required for this recipe
     var ingredients: [Ingredient]
+
+    /// Ordered list of cooking instructions
     var steps: [String]
+
+    /// User-defined or auto-generated tags for organization
     var tags: [String]
+
+    /// URL to the recipe's cover image
     var imageUrl: String?
+
+    /// When the recipe was first saved
     let createdAt: Date
+
+    /// Number of times the user has cooked this recipe
     var timesCooked: Int
 
+    /// The source type for how a recipe was imported into the app.
     enum SourceType: String, Codable, Sendable {
+        /// Imported from a video platform (TikTok, Instagram, YouTube)
         case video
+        /// Imported from a recipe website URL
         case url
+        /// Manually entered by the user
         case manual
     }
 
@@ -35,7 +75,11 @@ struct Recipe: Codable, Identifiable, Sendable, Hashable {
         case timesCooked = "times_cooked"
     }
 
-    // Custom decoder to handle missing/null fields from database
+    /// Creates a recipe by decoding from Supabase JSON response.
+    ///
+    /// Handles missing or null fields gracefully by using default values.
+    /// - Parameter decoder: The decoder to read data from
+    /// - Throws: `DecodingError` if required fields are missing
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -53,7 +97,23 @@ struct Recipe: Codable, Identifiable, Sendable, Hashable {
         timesCooked = (try? container.decodeIfPresent(Int.self, forKey: .timesCooked)) ?? 0
     }
 
-    // Manual initializer for creating new recipes
+    /// Creates a new recipe with the specified properties.
+    ///
+    /// Use this initializer when creating recipes locally before saving to the database.
+    ///
+    /// - Parameters:
+    ///   - id: Unique identifier (auto-generated if not provided)
+    ///   - userId: ID of the user who owns this recipe
+    ///   - title: Display title of the recipe
+    ///   - sourceType: How the recipe was imported
+    ///   - sourceUrl: Original URL where the recipe was found
+    ///   - sourceName: Name of the source website or creator
+    ///   - ingredients: List of ingredients required
+    ///   - steps: Ordered cooking instructions
+    ///   - tags: Tags for organization
+    ///   - imageUrl: URL to cover image
+    ///   - createdAt: Creation timestamp (defaults to now)
+    ///   - timesCooked: Number of times cooked (defaults to 0)
     init(
         id: UUID = UUID(),
         userId: UUID,

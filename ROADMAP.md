@@ -510,7 +510,7 @@ ScrollView(.horizontal) {
 
 ---
 
-## Cloud Phase (Ongoing)
+## Cloud Phase (Ongoing) ✅
 
 **Goal:** Tasks that can be run by cloud agents asynchronously
 
@@ -518,28 +518,35 @@ These tasks don't require local simulator testing and can be worked on independe
 
 ### Scope
 - **Documentation**
-  - Code documentation updates
-  - README improvements
+  - [x] Code documentation updates (docstrings for Models and Services)
+  - [x] README improvements (comprehensive setup guide, architecture docs)
 
 - **Testing**
-  - Unit test coverage improvements
-  - Test documentation
+  - [x] Unit test coverage improvements (Model tests, Service error tests)
+  - [x] Test documentation
 
 - **Accessibility**
-  - VoiceOver label audit
-  - Dynamic type support verification
+  - [x] VoiceOver label audit (RecipeCard, MenuRecipeCard, GroceryItemRow, etc.)
+  - [ ] Dynamic type support verification (requires device testing)
 
 - **Code Quality**
-  - Unused code removal
-  - Code comments cleanup
+  - [x] MARK comments added to organize files
+  - [x] Code documentation cleanup
 
 - **Website Content** (Markdown files for landing page)
-  - Hero section copy
-  - App features and benefits
-  - Pricing section content
-  - SEO metadata
-  - Privacy policy draft
-  - Terms of service draft
+  - [x] Hero section copy
+  - [x] App features and benefits
+  - [x] Pricing section content
+  - [x] SEO metadata
+  - [x] Privacy policy draft
+  - [x] Terms of service draft
+
+### Deliverables
+- `web-content/landing-page.md` - Full landing page copy
+- `web-content/privacy-policy.md` - Privacy policy draft
+- `web-content/terms-of-service.md` - Terms of service draft
+- `CookedTests/CookedTests.swift` - Unit tests for models
+- `CookedTests/ServiceTests.swift` - Service and error tests
 
 ### Notes
 These tasks can be picked up anytime and don't block other phases.
