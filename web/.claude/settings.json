@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read file_path; if echo \"$file_path\" | grep -qE '\\.(vue|ts|js|mjs|json)$'; then cd \"$CLAUDE_PROJECT_DIR\" && pnpm fmt \"$file_path\" 2>/dev/null && pnpm lint:fix \"$file_path\" 2>/dev/null; fi; }",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

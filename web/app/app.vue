@@ -1,18 +1,15 @@
 <script setup>
 useHead({
-  meta: [
-    { name: 'viewport', content: 'width=device-width, initial-scale=1' }
-  ],
-  link: [
-    { rel: 'icon', href: '/favicon.ico' }
-  ],
+  meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
+  link: [{ rel: 'icon', href: '/favicon.ico' }],
   htmlAttrs: {
     lang: 'en'
   }
 })
 
 const title = 'Cooked - Turn Recipe Inspiration Into Real Meals | Menu Planning App'
-const description = 'Stop hoarding recipes you\'ll never cook. Cooked helps you build a weekly menu from TikTok, Instagram, and recipe blogs, then generates your grocery list automatically.'
+const description =
+  "Stop hoarding recipes you'll never cook. Cooked helps you build a weekly menu from TikTok, Instagram, and recipe blogs, then generates your grocery list automatically."
 
 useSeoMeta({
   title,
@@ -38,15 +35,9 @@ const footerLinks = [
   <UApp>
     <UHeader>
       <template #left>
-        <NuxtLink
-          to="/"
-          class="flex items-center gap-2"
-        >
-          <UIcon
-            name="i-lucide-cooking-pot"
-            class="size-6 text-primary"
-          />
-          <span class="font-semibold text-lg">Cooked</span>
+        <NuxtLink to="/" class="flex items-center gap-2">
+          <UIcon name="i-lucide-cooking-pot" class="size-6 text-primary" />
+          <span class="text-lg font-semibold">Cooked</span>
         </NuxtLink>
       </template>
 
@@ -66,19 +57,17 @@ const footerLinks = [
         </p>
       </template>
 
-      <template #center>
-        <div class="flex items-center gap-4">
-          <UButton
-            v-for="link in footerLinks"
-            :key="link.to"
-            :to="link.to"
-            :label="link.label"
-            color="neutral"
-            variant="link"
-            size="sm"
-          />
-        </div>
-      </template>
+      <div class="flex items-center gap-4">
+        <UButton
+          v-for="link in footerLinks"
+          :key="link.to"
+          :to="link.to"
+          :label="link.label"
+          color="neutral"
+          variant="link"
+          size="sm"
+        />
+      </div>
     </UFooter>
   </UApp>
 </template>

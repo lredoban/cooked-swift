@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [".claude/**"],
+  "trailingComma": "none",
+  "singleQuote": true,
+  "semi": false,
+  "experimentalTailwindcss": {
+    "stylesheet": "./app/assets/css/main.css",
+    "attributes": ["class", "className"],
+    "functions": ["clsx", "cn"],
+    "preserveWhitespace": true
+  }
+}
