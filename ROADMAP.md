@@ -594,10 +594,10 @@ These tasks can be picked up anytime and don't block other phases.
 
 ## Backend & Web (Ongoing)
 
-**Goal:** Next.js app for API improvements and public website
+**Goal:** Nuxt.js app for API improvements and public website
 
 This is a separate repo/project that supports the iOS app. Currently using Nitro
-for extraction, will migrate to Next.js.
+for extraction, will migrate to Nuxt.js.
 
 ### Scope
 
@@ -608,7 +608,7 @@ for extraction, will migrate to Next.js.
 
 - **Website (Frontend)**
   - Landing page (hero, features, pricing)
-  - Blog for SEO content
+  - ~~Blog for SEO content (Maybe Later)~~
   - Legal pages (CGV, privacy policy, terms)
   - App Store / download links
 
@@ -617,15 +617,10 @@ for extraction, will migrate to Next.js.
   - Real-time sync (family can check items together)
   - QR code generation for easy sharing
 
-- **Shareable Recipes** (Future)
-  - Public recipe pages
-  - Open Graph images for social sharing
-
 ### Tech Stack
 
 - Nuxt 3 (Vue)
 - Supabase (same database as iOS app)
-- Vercel deployment
 
 ### Folder Structure
 
@@ -641,11 +636,6 @@ Cooked/
 ├── ROADMAP.md
 └── ...
 ```
-
-### Notes
-
-This runs in parallel with iOS development. Website content (copy) can be
-prepared in Cloud Phase, then implemented here.
 
 ---
 
