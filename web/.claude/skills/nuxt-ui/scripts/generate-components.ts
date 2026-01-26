@@ -33,7 +33,7 @@ const CATEGORIES: Record<string, string> = {
   data: 'Data',
   navigation: 'Navigation',
   overlay: 'Overlay',
-  layout: 'Layout',
+  layout: 'Layout'
 }
 
 // Version mapping for components introduced after v4.0
@@ -47,7 +47,7 @@ const VERSION_MAP: Record<string, string> = {
   'editor-emoji-menu': 'v4.3+',
   'editor-mention-menu': 'v4.3+',
   'editor-suggestion-menu': 'v4.3+',
-  'editor-toolbar': 'v4.3+',
+  'editor-toolbar': 'v4.3+'
 }
 
 function parseYamlFrontmatter(content: string): { frontmatter: Record<string, any>, body: string } {
@@ -148,8 +148,7 @@ async function main() {
   try {
     execSync(`git clone --depth 1 --filter=blob:none --sparse ${REPO_URL} ${TMP_DIR}`, { stdio: 'inherit' })
     execSync(`git sparse-checkout set ${DOCS_PATH}`, { cwd: TMP_DIR, stdio: 'inherit' })
-  }
-  catch {
+  } catch {
     console.error(`\nFailed to clone ${REPO_URL}. Check network/GitHub status.`)
     process.exit(1)
   }
@@ -173,7 +172,7 @@ async function main() {
       description: frontmatter.description || '',
       category: frontmatter.category || 'other',
       rekaLink: frontmatter.rekaLink,
-      version: VERSION_MAP[name],
+      version: VERSION_MAP[name]
     }
     components.push(meta)
 
@@ -226,8 +225,7 @@ async function main() {
     if (hasVersionCol) {
       index.push(`| ${'Component'.padEnd(maxComp)} | ${'Description'.padEnd(maxDesc)} | Version |`)
       index.push(`| ${'-'.repeat(maxComp)} | ${'-'.repeat(maxDesc)} | ------- |`)
-    }
-    else {
+    } else {
       index.push(`| ${'Component'.padEnd(maxComp)} | ${'Description'.padEnd(maxDesc)} |`)
       index.push(`| ${'-'.repeat(maxComp)} | ${'-'.repeat(maxDesc)} |`)
     }
@@ -238,8 +236,7 @@ async function main() {
       if (hasVersionCol) {
         const desc = comp.version ? `${comp.description} (${comp.version})` : comp.description
         index.push(`| ${link.padEnd(maxComp)} | ${desc.padEnd(maxDesc)} | ${(comp.version || '').padEnd(7)} |`)
-      }
-      else {
+      } else {
         const desc = comp.version ? `${comp.description} (${comp.version})` : comp.description
         index.push(`| ${link.padEnd(maxComp)} | ${desc.padEnd(maxDesc)} |`)
       }
