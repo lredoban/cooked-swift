@@ -594,23 +594,51 @@ These tasks can be picked up anytime and don't block other phases.
 
 ## Backend & Web (Ongoing)
 
-**Goal:** Nuxt.js app for API improvements and public website
+**Goal:** Nuxt.js website + Python extraction API
 
-This is a separate repo/project that supports the iOS app. Currently using Nitro
-for extraction, will migrate to Nuxt.js.
+### Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                 Cloudflare Pages (FREE)                      │
+│                    Nuxt Website                              │
+│       Landing • Privacy • Terms • Shareable Grocery Lists    │
+└────────────────────────────┬─────────────────────────────────┘
+                             │ POST /api/extract
+                             ▼
+┌──────────────────────────────────────────────────────────────┐
+│                   Modal ($30/mo free)                        │
+│                 Python Extraction API                        │
+│        (social_recipes: yt-dlp → Whisper → LLM)              │
+└────────────────────────────┬─────────────────────────────────┘
+                             │
+                             ▼
+┌──────────────────────────────────────────────────────────────┐
+│                        Supabase                              │
+│                (shared with iOS app)                         │
+└──────────────────────────────────────────────────────────────┘
+```
 
 ### Scope
 
-- **Recipe Extraction (API)**
-  - Improve extraction quality
-  - Better handling of video sources (TikTok, Instagram, YouTube)
-  - Error handling and fallbacks
+- **Project Setup** ✅
+  - [x] Initialize Nuxt 3 project with Nuxt UI
+  - [x] Configure pnpm workspace
+  - [x] Set up CI workflow (GitHub Actions)
+  - [x] Add code quality tools (oxlint, oxfmt)
+  - [x] Add Claude Code skills for Nuxt, Vue, Nuxt UI, Motion, Nuxt SEO, VueUse
 
-- **Website (Frontend)**
-  - Landing page (hero, features, pricing)
+- **Recipe Extraction (Modal + Python)**
+  - [ ] Set up Modal project
+  - [ ] Integrate social_recipes library (github.com/pickeld/social_recipes)
+  - [ ] API endpoint returning structured JSON recipe
+
+- **Website (Cloudflare Pages)**
+  - [x] Landing page (hero, features, pricing)
   - ~~Blog for SEO content (Maybe Later)~~
-  - Legal pages (CGV, privacy policy, terms)
-  - App Store / download links
+  - [x] Legal pages (privacy policy, terms of service)
+  - [ ] App Store / download links
+  - [ ] Deploy to Cloudflare Pages
 
 - **Shareable Grocery Lists**
   - Public URLs for grocery lists (no auth required)
@@ -619,19 +647,26 @@ for extraction, will migrate to Nuxt.js.
 
 ### Tech Stack
 
-- Nuxt 3 (Vue)
-- Supabase (same database as iOS app)
+| Component | Technology | Hosting |
+|-----------|------------|---------|
+| Website | Nuxt 3 + Nuxt UI | Cloudflare Pages (free) |
+| Extraction API | Python + social_recipes | Modal ($30/mo free credits) |
+| Database | PostgreSQL | Supabase |
+| Code Quality | oxlint + oxfmt | - |
 
 ### Folder Structure
 
 ```
 Cooked/
-├── Cooked/              # iOS app (unchanged)
-├── Cooked.xcodeproj     # (unchanged)
-├── web/                 # Nuxt website (new)
+├── Cooked/              # iOS app
+├── Cooked.xcodeproj
+├── web/                 # Nuxt website → Cloudflare Pages
 │   ├── nuxt.config.ts
-│   ├── pages/
-│   └── server/api/      # extraction API
+│   ├── app/pages/
+│   └── ...
+├── extraction/          # Python API → Modal (TODO)
+│   ├── main.py
+│   └── requirements.txt
 ├── CLAUDE.md
 ├── ROADMAP.md
 └── ...
