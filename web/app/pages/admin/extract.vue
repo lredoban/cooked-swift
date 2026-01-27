@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'dev-only'
+})
+
 const url = ref('')
 const mode = ref<'info' | 'audio' | 'video'>('info')
 const loading = ref(false)
@@ -30,7 +34,7 @@ async function extract() {
     const body: Record<string, unknown> = {
       url: url.value,
       mode: mode.value,
-      flatPlaylist: flatPlaylist.value,
+      flatPlaylist: flatPlaylist.value
     }
 
     if (mode.value === 'audio') {
@@ -45,33 +49,25 @@ async function extract() {
 
     const data = await $fetch('/api/extract', {
       method: 'POST',
-      body,
+      body
     })
     result.value = data
-  }
-  catch (e: unknown) {
-    const err = e as { data?: { message?: string }, message?: string }
+  } catch (e: unknown) {
+    const err = e as { data?: { message?: string }; message?: string }
     error.value = err.data?.message || err.message || 'Unknown error'
-  }
-  finally {
+  } finally {
     loading.value = false
   }
 }
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto p-6 space-y-6">
-    <h1 class="text-2xl font-bold">
-      yt-dlp Extract Tester
-    </h1>
+  <div class="mx-auto max-w-4xl space-y-6 p-6">
+    <h1 class="text-2xl font-bold">yt-dlp Extract Tester</h1>
 
     <!-- URL Input -->
     <UFormField label="URL">
-      <UInput
-        v-model="url"
-        placeholder="https://www.youtube.com/watch?v=..."
-        class="w-full"
-      />
+      <UInput v-model="url" placeholder="https://www.youtube.com/watch?v=..." class="w-full" />
     </UFormField>
 
     <!-- Mode Selection -->
@@ -81,17 +77,15 @@ async function extract() {
         :items="[
           { label: 'Info only', value: 'info' },
           { label: 'Audio', value: 'audio' },
-          { label: 'Video', value: 'video' },
+          { label: 'Video', value: 'video' }
         ]"
         orientation="horizontal"
       />
     </UFormField>
 
     <!-- Audio Options -->
-    <div v-if="mode === 'audio'" class="space-y-4 p-4 border rounded-lg">
-      <h2 class="font-semibold">
-        Audio Options
-      </h2>
+    <div v-if="mode === 'audio'" class="space-y-4 rounded-lg border p-4">
+      <h2 class="font-semibold">Audio Options</h2>
       <div class="grid grid-cols-2 gap-4">
         <UFormField label="Format">
           <USelect v-model="audioFormat" :items="audioFormats" />
@@ -103,10 +97,8 @@ async function extract() {
     </div>
 
     <!-- Video Options -->
-    <div v-if="mode === 'video'" class="space-y-4 p-4 border rounded-lg">
-      <h2 class="font-semibold">
-        Video Options
-      </h2>
+    <div v-if="mode === 'video'" class="space-y-4 rounded-lg border p-4">
+      <h2 class="font-semibold">Video Options</h2>
       <div class="grid grid-cols-2 gap-4">
         <UFormField label="Quality">
           <USelect v-model="videoQuality" :items="videoQualities" />
@@ -121,19 +113,17 @@ async function extract() {
     <UCheckbox v-model="flatPlaylist" label="Flat playlist (skip individual video details)" />
 
     <!-- Submit -->
-    <UButton :loading="loading" :disabled="!url" size="lg" @click="extract">
-      Extract
-    </UButton>
+    <UButton :loading="loading" :disabled="!url" size="lg" @click="extract"> Extract </UButton>
 
     <!-- Error -->
     <UAlert v-if="error" color="error" :title="error" />
 
     <!-- Result -->
     <div v-if="result" class="space-y-2">
-      <h2 class="font-semibold">
-        Result
-      </h2>
-      <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-auto max-h-[600px] text-sm">{{ JSON.stringify(result, null, 2) }}</pre>
+      <h2 class="font-semibold">Result</h2>
+      <pre class="max-h-[600px] overflow-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">{{
+        JSON.stringify(result, null, 2)
+      }}</pre>
     </div>
   </div>
 </template>

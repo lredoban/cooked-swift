@@ -16,6 +16,10 @@ interface ExtractBody {
 }
 
 export default defineEventHandler(async (event) => {
+  if (!import.meta.dev) {
+    throw createError({ statusCode: 404, statusMessage: 'Not found' })
+  }
+
   const body = await readBody<ExtractBody>(event)
 
   if (!body?.url) {
@@ -27,7 +31,7 @@ export default defineEventHandler(async (event) => {
   try {
     if (mode === 'info') {
       const info = await ytdlp.getInfoAsync(url, {
-        flatPlaylist: body.flatPlaylist ?? true,
+        flatPlaylist: body.flatPlaylist ?? true
       })
       return { success: true, mode, data: info }
     }
@@ -38,11 +42,11 @@ export default defineEventHandler(async (event) => {
         format: {
           filter: 'audioonly',
           quality: 5,
-          type: format,
+          type: format
         },
         extractAudio: true,
         audioFormat: format,
-        audioQuality: body.audioQuality ?? '5',
+        audioQuality: body.audioQuality ?? '5'
       })
       return { success: true, mode, data: result }
     }
@@ -54,15 +58,14 @@ export default defineEventHandler(async (event) => {
         format: {
           filter: 'mergevideo',
           quality,
-          type,
-        },
+          type
+        }
       })
       return { success: true, mode, data: result }
     }
 
     throw createError({ statusCode: 400, statusMessage: `Invalid mode: ${mode}` })
-  }
-  catch (error: unknown) {
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)
     throw createError({ statusCode: 500, statusMessage: message })
   }
