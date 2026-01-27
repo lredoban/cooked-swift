@@ -74,6 +74,7 @@ export default defineEventHandler(async (event) => {
   const listener = (eventName: string, data: unknown) => {
     send(eventName, data)
     if (eventName === 'complete' || eventName === 'error') {
+      jobStore.unsubscribe(recipeId, listener)
       res.end()
     }
   }
