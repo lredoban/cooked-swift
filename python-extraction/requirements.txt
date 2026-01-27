@@ -1,0 +1,10 @@
+# Modal deployment
+modal>=0.64.0
+
+# API
+fastapi[standard]>=0.115.0
+pydantic>=2.0.0
+
+# Content extraction
+instaloader>=4.10.0
+yt-dlp>=2024.0.0
