@@ -22,7 +22,8 @@
     "@nuxt/ui": "^4.4.0",
     "@unhead/vue": "^2.1.2",
     "nuxt": "^4.2.2",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "ytdlp-nodejs": "^3.4.1"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.13.0",
@@ -32,6 +33,9 @@
     "oxlint": "^1.41.0",
     "typescript": "^5.9.3",
     "vue-tsc": "^3.2.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["ytdlp-nodejs"]
   },
   "packageManager": "pnpm@10.28.1"
 }

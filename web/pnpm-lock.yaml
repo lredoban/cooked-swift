@@ -38,6 +38,9 @@ importers:
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
+      ytdlp-nodejs:
+        specifier: ^3.4.1
+        version: 3.4.1
     devDependencies:
       '@nuxt/eslint':
         specifier: ^1.13.0
@@ -5499,6 +5502,11 @@ packages:
 
   youch@4.1.0-beta.13:
     resolution: {integrity: sha512-3+AG1Xvt+R7M7PSDudhbfbwiyveW6B8PLBIwTyEC598biEYIjHhC89i6DBEvR0EZUjGY3uGSnC429HpIa2Z09g==}
+
+  ytdlp-nodejs@3.4.1:
+    resolution: {integrity: sha512-ON4PSuwAwzohrI5SUhkw4VbHlg+4xVp9mjFN2Bx6/DbkCaghlzeVWOYKcQArKjCoqJ1Mz+eblbzuMLeetVm4+Q==}
+    engines: {node: '>=16.0.0'}
+    hasBin: true
 
   zip-stream@6.0.1:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
@@ -11496,6 +11504,8 @@ snapshots:
       '@speed-highlight/core': 1.2.14
       cookie-es: 2.0.0
       youch-core: 0.3.3
+
+  ytdlp-nodejs@3.4.1: {}
 
   zip-stream@6.0.1:
     dependencies:
