@@ -5,13 +5,21 @@ struct RecipeCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            AsyncImageView(url: recipe.imageUrl)
-                .frame(height: 120)
-                .frame(maxWidth: .infinity)
-                .background(Color.gray.opacity(0.1))
-                .clipped()
-                .cornerRadius(12)
-                .accessibilityHidden(true)
+            ZStack(alignment: .topTrailing) {
+                AsyncImageView(url: recipe.imageUrl)
+                    .frame(height: 120)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.1))
+                    .clipped()
+                    .cornerRadius(12)
+                    .accessibilityHidden(true)
+
+                if recipe.importStatus == .importing {
+                    importBadge(text: "Importing...", icon: "arrow.down.circle.fill")
+                } else if recipe.importStatus == .pendingReview {
+                    importBadge(text: "Ready", icon: "checkmark.circle.fill")
+                }
+            }
 
             Text(recipe.title)
                 .font(.subheadline)
@@ -29,6 +37,20 @@ struct RecipeCard: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint("Double tap to view recipe details")
+    }
+
+    private func importBadge(text: String, icon: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+            Text(text)
+        }
+        .font(.caption2)
+        .fontWeight(.medium)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(.ultraThinMaterial)
+        .cornerRadius(8)
+        .padding(6)
     }
 
     private var accessibilityLabel: String {

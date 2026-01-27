@@ -1,15 +1,69 @@
 import Foundation
 
-// MARK: - API Request
+// MARK: - Import Trigger Request
+
+/// Request payload for `POST /api/recipes/import`.
+struct ImportRequest: Encodable {
+    let url: String
+    let sourceType: String?
+
+    enum CodingKeys: String, CodingKey {
+        case url
+        case sourceType = "source_type"
+    }
+}
+
+// MARK: - Import Trigger Response
+
+/// Response from `POST /api/recipes/import`.
+///
+/// Returns the server-created recipe ID and lightweight metadata
+/// (scraped from OG/oEmbed tags) while full extraction runs in the background.
+struct ImportMetadata: Decodable, Sendable {
+    let recipeId: UUID
+    let status: String
+    let title: String
+    let sourceName: String?
+    let sourceUrl: String
+    let imageUrl: String?
+    let platform: String?
+
+    enum CodingKeys: String, CodingKey {
+        case recipeId = "recipe_id"
+        case status
+        case title
+        case sourceName = "source_name"
+        case sourceUrl = "source_url"
+        case imageUrl = "image_url"
+        case platform
+    }
+}
+
+// MARK: - SSE Events
+
+/// Data received from an SSE progress event.
+struct ImportProgressEvent: Decodable, Sendable {
+    let stage: String
+    let message: String
+}
+
+/// Data received from an SSE completion event.
+struct ImportCompleteEvent: Decodable, Sendable {
+    let ingredients: [ExtractedIngredient]
+    let steps: [String]
+    let tags: [String]
+}
+
+/// Data received from an SSE error event.
+struct ImportErrorEvent: Decodable, Sendable {
+    let reason: String
+}
+
+// MARK: - Legacy API Request (deprecated)
 
 /// Request payload for the recipe extraction API.
-///
-/// Sent to `POST /api/recipes/extract` to extract recipe data from a URL.
 struct ExtractRequest: Encodable {
-    /// The URL to extract the recipe from
     let url: String
-
-    /// Optional source type hint (e.g., "video", "url")
     let sourceType: String?
 
     enum CodingKeys: String, CodingKey {
@@ -18,14 +72,11 @@ struct ExtractRequest: Encodable {
     }
 }
 
-// MARK: - API Response
+// MARK: - Legacy API Response (deprecated)
 
 /// Response from the recipe extraction API.
 struct ExtractResponse: Decodable {
-    /// Whether extraction was successful
     let success: Bool
-
-    /// The extracted recipe data
     let recipe: ExtractedRecipe
 }
 
