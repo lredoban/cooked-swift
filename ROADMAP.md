@@ -603,13 +603,7 @@ These tasks can be picked up anytime and don't block other phases.
 │                 Cloudflare Pages (FREE)                      │
 │                    Nuxt Website                              │
 │       Landing • Privacy • Terms • Shareable Grocery Lists    │
-└────────────────────────────┬─────────────────────────────────┘
-                             │ POST /api/extract
-                             ▼
-┌──────────────────────────────────────────────────────────────┐
-│                   Modal ($30/mo free)                        │
-│                 Python Extraction API                        │
-│        (social_recipes: yt-dlp → Whisper → LLM)              │
+│       Server routes: /api/recipes/import, /api/extract (dev) │
 └────────────────────────────┬─────────────────────────────────┘
                              │
                              ▼
@@ -628,10 +622,10 @@ These tasks can be picked up anytime and don't block other phases.
   - [x] Add code quality tools (oxlint, oxfmt)
   - [x] Add Claude Code skills for Nuxt, Vue, Nuxt UI, Motion, Nuxt SEO, VueUse
 
-- **Recipe Extraction (Modal + Python)**
-  - [ ] Set up Modal project
-  - [ ] Integrate social_recipes library (github.com/pickeld/social_recipes)
-  - [ ] API endpoint returning structured JSON recipe
+- **Recipe Extraction**
+  - [x] yt-dlp extraction endpoints in Nuxt (`/api/extract`, `/api/recipes/import`, `/api/recipes/[id]/stream`)
+  - [x] `/api/extract` and `/admin/extract` gated with `import.meta.dev` (dev-only)
+  - [ ] Production extraction solution (TBD)
 
 - **Website (Cloudflare Pages)**
   - [x] Landing page (hero, features, pricing)
@@ -650,7 +644,7 @@ These tasks can be picked up anytime and don't block other phases.
 | Component | Technology | Hosting |
 |-----------|------------|---------|
 | Website | Nuxt 3 + Nuxt UI | Cloudflare Pages (free) |
-| Extraction API | Python + social_recipes | Modal ($30/mo free credits) |
+| Extraction | yt-dlp in Nuxt server routes | Dev-only for now |
 | Database | PostgreSQL | Supabase |
 | Code Quality | oxlint + oxfmt | - |
 
@@ -663,10 +657,8 @@ Cooked/
 ├── web/                 # Nuxt website → Cloudflare Pages
 │   ├── nuxt.config.ts
 │   ├── app/pages/
+│   ├── server/api/      # Server routes (extraction dev-only)
 │   └── ...
-├── extraction/          # Python API → Modal (TODO)
-│   ├── main.py
-│   └── requirements.txt
 ├── CLAUDE.md
 ├── ROADMAP.md
 └── ...
@@ -678,8 +670,9 @@ Cooked/
 
 Items to implement later when ready:
 
-- [ ] **RevenueCat Paywall UI** - Use RevenueCat's native paywall (waiting for
-      credentials)
+- [ ] **Supabase RLS Policies** - Audit and enforce row-level security on all tables (recipes, menus, menu_recipes, grocery_lists, user_settings). RLS is enabled but policies need review.
+- [ ] **Scalable Job Store** - Current in-memory job store (jobs.ts) won't work with horizontal scaling. SSE listeners are in-memory callbacks that can't be shared across instances. Options: Supabase Realtime (subscribe to recipe row changes, eliminates in-memory store entirely), or Redis pub/sub + Nitro `useStorage()`. Supabase Realtime is preferred since the extraction already writes to DB.
+- [ ] **RevenueCat Paywall UI** - Use RevenueCat's native paywall (waiting for credentials)
 - [ ] **Annual Plan** - Add yearly subscription option to RevenueCat
 - [ ] **Code Quality Tooling** - Set up SwiftLint and SwiftFormat
 

@@ -15,6 +15,9 @@ Pods/
 # Secrets - DO NOT COMMIT
 Cooked/Configuration/Secrets.xcconfig
 
+# Generated extraction artifacts
+python-extraction/
+
 # macOS
 .DS_Store
 *.swp
