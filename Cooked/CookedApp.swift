@@ -14,18 +14,26 @@ struct CookedApp: App {
     @State private var menuState = MenuState()
     @State private var groceryListState = GroceryListState()
     @State private var subscriptionState = SubscriptionState()
+    @State private var onboardingState = OnboardingState()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(supabaseService)
-                .environment(recipeState)
-                .environment(menuState)
-                .environment(groceryListState)
-                .environment(subscriptionState)
-                .task {
-                    await initializeApp()
+            Group {
+                if onboardingState.hasCompletedOnboarding {
+                    ContentView()
+                } else {
+                    OnboardingRootView()
                 }
+            }
+            .environment(supabaseService)
+            .environment(recipeState)
+            .environment(menuState)
+            .environment(groceryListState)
+            .environment(subscriptionState)
+            .environment(onboardingState)
+            .task {
+                await initializeApp()
+            }
         }
     }
 
