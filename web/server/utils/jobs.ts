@@ -11,6 +11,7 @@ export interface ProgressEvent {
 
 export interface Job {
   recipeId: string
+  userId: string
   status: 'importing' | 'pending_review' | 'failed'
   progress: ProgressEvent[]
   result: ExtractionResult | null
@@ -28,9 +29,10 @@ class JobStore {
   private jobs = new Map<string, Job>()
   private listeners = new Map<string, Set<JobListener>>()
 
-  create(recipeId: string): Job {
+  create(recipeId: string, userId: string): Job {
     const job: Job = {
       recipeId,
+      userId,
       status: 'importing',
       progress: [],
       result: null,

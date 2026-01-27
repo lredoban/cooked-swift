@@ -27,22 +27,20 @@ export default defineEventHandler(async (event) => {
 
   // Persist recipe to database with "importing" status
   const supabase = useSupabaseAdmin()
-  const { error: insertError } = await supabase
-    .from('recipes')
-    .insert({
-      id: recipeId,
-      user_id: userId,
-      title: metadata.title,
-      source_type: sourceType,
-      source_url: url,
-      source_name: metadata.source_name,
-      image_url: metadata.image_url,
-      status: 'importing',
-      ingredients: [],
-      steps: [],
-      tags: [],
-      times_cooked: 0
-    })
+  const { error: insertError } = await supabase.from('recipes').insert({
+    id: recipeId,
+    user_id: userId,
+    title: metadata.title,
+    source_type: sourceType,
+    source_url: url,
+    source_name: metadata.source_name,
+    image_url: metadata.image_url,
+    status: 'importing',
+    ingredients: [],
+    steps: [],
+    tags: [],
+    times_cooked: 0
+  })
 
   if (insertError) {
     console.error('[import] DB insert failed:', insertError)
@@ -50,7 +48,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Kick off background extraction (fire-and-forget)
-  jobStore.create(recipeId)
+  jobStore.create(recipeId, userId)
   startExtraction(recipeId, url, platform)
 
   // Return immediately with metadata

@@ -1,7 +1,7 @@
 import { jobStore } from '../../../utils/jobs'
 
 export default defineEventHandler(async (event) => {
-  await requireAuth(event)
+  const userId = await requireAuth(event)
 
   const recipeId = getRouterParam(event, 'id')
   if (!recipeId) {
@@ -24,6 +24,9 @@ export default defineEventHandler(async (event) => {
   // Check if extraction already completed (reconnection case)
   const job = jobStore.get(recipeId)
   if (job) {
+    if (job.userId !== userId) {
+      throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+    }
     // Replay any past progress events
     for (const progress of job.progress) {
       send('progress', progress)
@@ -47,6 +50,7 @@ export default defineEventHandler(async (event) => {
       .from('recipes')
       .select('status, ingredients, steps, tags')
       .eq('id', recipeId)
+      .eq('user_id', userId)
       .single()
 
     if (recipe?.status === 'pending_review' || recipe?.status === 'active') {
