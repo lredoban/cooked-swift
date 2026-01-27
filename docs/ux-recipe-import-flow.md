@@ -27,6 +27,65 @@ User is watching a TikTok/YouTube/Instagram video or browsing a recipe site. The
 
 ---
 
+## API Architecture: Trigger + Subscribe
+
+The import uses a **trigger + subscribe** pattern instead of a blocking request or two parallel calls.
+
+### `POST /api/recipes/import` — Trigger endpoint
+
+The client sends the URL. The server:
+1. Scrapes lightweight metadata (OG tags / oEmbed) — fast, <1s
+2. Creates the recipe in the database with status `importing`
+3. Kicks off the full extraction as a background job
+4. Returns immediately with:
+
+```json
+{
+  "recipe_id": "uuid",
+  "status": "importing",
+  "title": "Creamy Garlic Pasta",
+  "source_name": "@cookingwithmaria",
+  "source_url": "https://youtube.com/watch?v=...",
+  "image_url": "https://i.ytimg.com/vi/.../hqdefault.jpg",
+  "platform": "youtube"
+}
+```
+
+This is the only call the **share extension** needs to make. Hit the endpoint, get the recipe ID back, show the checkmark, done. The recipe now exists server-side — the user can close the extension, close the app, whatever. The extraction will finish regardless.
+
+### `GET /api/recipes/{id}/stream` — SSE subscription
+
+The client opens a Server-Sent Events connection to receive extraction progress:
+
+```
+event: progress
+data: {"stage": "downloading_video", "message": "Downloading video..."}
+
+event: progress
+data: {"stage": "transcribing", "message": "Transcribing audio..."}
+
+event: progress
+data: {"stage": "extracting", "message": "Extracting recipe..."}
+
+event: complete
+data: {"ingredients": [...], "steps": [...], "tags": [...]}
+```
+
+**Why SSE over WebSocket?** SSE is simpler — unidirectional, auto-reconnects, works over HTTP/2, no special server infrastructure. We only need server→client updates here.
+
+**Why this pattern wins:**
+- **One source of truth.** The recipe lives in the database from the moment the user submits the URL. No local-only partial state to manage.
+- **Share extension is trivial.** One POST, one response, done. No App Group file passing, no "pick it up on next launch" logic.
+- **Resilient to disconnects.** If the SSE connection drops (user backgrounds the app, network blip), the client just polls `GET /api/recipes/{id}` on reconnect to see if extraction finished.
+- **Progress updates for free.** The server can emit stages ("downloading video...", "transcribing...", "extracting recipe...") which make the wait feel active instead of stalled.
+- **Works for queued jobs.** If extraction is handled by a job queue (which it should be for video), SSE naturally fits — the API subscribes to the job's progress and forwards events.
+
+### Fallback: Polling
+
+If SSE isn't feasible initially, the client can poll `GET /api/recipes/{id}` every 3s. The recipe's `status` field transitions from `importing` → `pending_review` when extraction completes. Less elegant but works.
+
+---
+
 ## The Import Flow (Step by Step)
 
 ### Phase 1: URL Submission (0-2s)
@@ -39,10 +98,11 @@ URL arrives automatically → show confirmation → dismiss
 
 **Immediately on submission:**
 1. Validate URL format (client-side)
-2. Fire a lightweight **metadata fetch** (separate fast endpoint: title, thumbnail, creator name, platform) — target < 1s response
-3. Simultaneously fire the **full extraction** (ingredients, steps, tags) — this is the slow one (5-30s+)
+2. `POST /api/recipes/import` with the URL and user auth token
+3. Server returns recipe ID + metadata instantly
+4. Client opens SSE connection to `/api/recipes/{id}/stream`
 
-> **Design decision — two API calls instead of one.** The current flow sends one request and waits for everything. Splitting into a fast metadata call and a slow extraction call lets us show meaningful content almost instantly. The metadata endpoint should return in under 1 second by just scraping Open Graph / oEmbed data.
+> **Design decision — trigger + subscribe.** The server owns the recipe from the moment the URL is submitted. The client just subscribes to updates. This means the share extension only needs one API call, and the app can reconnect to an in-progress extraction at any time.
 
 ### Phase 2: Instant Preview Card (1-3s)
 
@@ -168,40 +228,54 @@ When the user comes back to a recipe that finished importing in the background:
 ## State Machine
 
 ```
-                    ┌──────────┐
-     URL received → │ FETCHING │ (metadata call)
-                    │ METADATA │
-                    └────┬─────┘
-                         │ metadata arrives
-                         ▼
-                    ┌──────────┐
-                    │EXTRACTING│ (full extraction running)
-                    │          │ user can edit title/tags
-                    └────┬─────┘
-                    ┌────┴─────┐
-            < 15s   │          │  > 15s
-                    ▼          ▼
-              ┌──────────┐  ┌────────────┐
-              │  READY   │  │ BACKGROUND │
-              │(edit mode│  │ PROCESSING │
-              │  inline) │  └─────┬──────┘
-              └────┬─────┘        │ extraction completes
-                   │              ▼
-                   │        ┌───────────┐
-                   │        │  PENDING  │ (waiting for user)
-                   │        │  REVIEW   │
-                   │        └─────┬─────┘
-                   │              │ user opens
-                   │              ▼
-                   │        ┌───────────┐
-                   └───────►│   EDIT    │
-                            │   MODE    │
-                            └─────┬─────┘
-                                  │ save / cook now
-                                  ▼
-                            ┌───────────┐
-                            │   SAVED   │
-                            └───────────┘
+     URL submitted
+          │
+          ▼
+   ┌──────────────┐
+   │   TRIGGER    │  POST /api/recipes/import
+   │  (server)    │  → creates recipe, returns metadata + ID
+   └──────┬───────┘
+          │
+     ┌────┴──────────────────────┐
+     │                           │
+  In-App                    Share Extension
+     │                           │
+     ▼                           ▼
+┌──────────┐              ┌────────────┐
+│ SUBSCRIBE│ SSE stream   │   DONE     │ show checkmark
+│ (client) │              │ (dismiss)  │ server handles rest
+└────┬─────┘              └────────────┘
+     │
+     │ user sees metadata card,
+     │ can edit title/tags
+     │ SSE sends progress stages
+     │
+     ├────────────────────────────┐
+     │ extraction completes      │ timeout (8-20s)
+     │ < timeout                 │
+     ▼                           ▼
+┌──────────┐              ┌────────────┐
+│  READY   │              │ BACKGROUND │ user taps
+│(edit mode│              │ PROCESSING │ "Continue Browsing"
+│  inline) │              └─────┬──────┘
+└────┬─────┘                    │ extraction completes
+     │                          │ (local notification)
+     │                          ▼
+     │                    ┌───────────┐
+     │                    │  PENDING  │ recipe in list
+     │                    │  REVIEW   │ with badge
+     │                    └─────┬─────┘
+     │                          │ user taps recipe
+     │                          ▼
+     │                    ┌───────────┐
+     └───────────────────►│   EDIT    │
+                          │   MODE    │
+                          └─────┬─────┘
+                                │ save / cook now
+                                ▼
+                          ┌───────────┐
+                          │   SAVED   │ status = active
+                          └───────────┘
 ```
 
 ---
@@ -224,17 +298,23 @@ Recipes with `importing` or `pending_review` status show a badge in the recipe l
 
 **Minimal share extension UI:**
 - App icon + "Saving to Cooked..." + animated checkmark
-- Auto-dismiss after 1.5s
+- Auto-dismiss after ~1.5s
 - No text fields, no options, no friction
 
 **Data flow:**
 1. Share extension receives URL
-2. Writes URL to App Group shared `UserDefaults` (or a shared Core Data / file)
-3. Main app picks it up on next launch (or immediately if running)
-4. Main app triggers the two-call import flow
+2. Calls `POST /api/recipes/import` with the URL + auth token from Keychain (shared via App Group)
+3. Server returns recipe ID + metadata — recipe now exists server-side
+4. Extension shows checkmark, dismisses
+5. Extraction runs entirely on the server — no app involvement needed
 
-**Why not call the API from the extension?**
-Share extensions have tight memory and time limits (~120MB, ~30s). The metadata call could work, but the full extraction definitely won't. Better to hand off to the main app.
+**Offline fallback:**
+If the network call fails, write the URL to App Group shared `UserDefaults`. Main app picks it up on next launch and retries the import.
+
+**Why this works now:** The trigger endpoint is fast and lightweight (<1s response). It fits comfortably within the share extension's time/memory limits. No need to hand off to the main app — the server owns the job.
+
+**Auth in the extension:**
+Store the Supabase auth token in Keychain with an App Group access group. The share extension reads it directly. If the token is missing or expired, fall back to queuing the URL locally.
 
 ---
 
@@ -267,20 +347,22 @@ Share extensions have tight memory and time limits (~120MB, ~30s). The metadata 
 
 | Original idea | Challenge | Resolution |
 |---------------|-----------|------------|
-| "Show title, source, creator, image while extracting" | This requires a separate fast metadata endpoint that doesn't exist yet | Build a lightweight `/api/recipes/metadata` endpoint that returns OG/oEmbed data in <1s |
+| "Show title, source, creator, image while extracting" | Needs fast metadata before extraction finishes | `POST /api/recipes/import` scrapes OG/oEmbed metadata and returns it in <1s, before kicking off extraction |
 | "Edit title while waiting" | Good, but editing ingredients/steps mid-extraction would create merge conflicts | Only allow title + tags editing during extraction. Full edit after completion. |
 | "15s timeout then background message" | 15s is reasonable for video. For websites it should be faster (~5s). | Use source-aware timeouts: 8s for websites, 20s for video platforms |
-| "Come back later in edit mode" | Need persistent state for in-progress imports | Add `importing` and `pending_review` recipe statuses to the data model |
+| "Come back later in edit mode" | Need persistent state for in-progress imports | Server owns the recipe from submission. Status field (`importing` → `pending_review` → `active`) handles this natively. |
+| "Share extension triggers extraction" | Share extensions have tight resource limits | Trigger endpoint is fast enough (<1s) to call directly from the extension. Server handles the rest. |
 | "Go shopping this lonely recipe" | Great shortcut. Naming it "Cook Now" makes intent clearer. | "Cook Now" creates a solo menu + grocery list in one action |
 
 ---
 
 ## Implementation Priority
 
-1. **Split API into metadata + extraction** — unlocks the entire fast-preview experience
-2. **Recipe status model** (`importing` / `pending_review` / `active`) — enables background processing
-3. **Shimmer loading states** — replaces the current blocking spinner
-4. **Background processing + local notifications** — handles the long-wait case
-5. **"Cook Now" action** — high-value shortcut from import to cooking
-6. **Share extension** — highest-intent entry point, but more engineering effort
-7. **Offline queuing** — nice-to-have, handles edge cases gracefully
+1. **`POST /api/recipes/import` trigger endpoint** — returns metadata + recipe ID, kicks off background extraction. This is the foundation everything else builds on.
+2. **Recipe status model** (`importing` / `pending_review` / `active`) — enables background processing and return-to-recipe flows
+3. **SSE stream endpoint** (`GET /api/recipes/{id}/stream`) — real-time progress updates to the client
+4. **Shimmer loading + progress stages UI** — replaces the current blocking spinner, shows extraction stages
+5. **Background-to-foreground reconnection** — app re-subscribes to SSE or polls on return, local notification on completion
+6. **"Cook Now" action** — high-value shortcut from import to cooking
+7. **Share extension** — now simple: one POST call, auth via shared Keychain, offline fallback to local queue
+8. **Offline queuing** — nice-to-have, handles edge cases for share extension and in-app import
