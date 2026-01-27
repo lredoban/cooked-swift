@@ -98,7 +98,9 @@ class JobStore {
     const listeners = this.listeners.get(recipeId)
     if (!listeners) return
     for (const listener of listeners) {
-      listener(event, data)
+      Promise.resolve(listener(event, data)).catch((err) => {
+        console.error(`[jobs] Listener error for ${recipeId}:`, err)
+      })
     }
   }
 }

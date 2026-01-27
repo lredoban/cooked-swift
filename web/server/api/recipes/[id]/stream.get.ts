@@ -8,6 +8,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Recipe ID is required' })
   }
 
+  // Verify ownership before creating stream
+  const job = jobStore.get(recipeId)
+  if (job && job.userId !== userId) {
+    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+  }
+
   const stream = createEventStream(event)
 
   const send = async (eventName: string, data: unknown) => {
@@ -19,11 +25,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check if extraction already completed (reconnection case)
-  const job = jobStore.get(recipeId)
   if (job) {
-    if (job.userId !== userId) {
-      throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
-    }
     // Replay any past progress events
     for (const progress of job.progress) {
       await send('progress', progress)
@@ -62,6 +64,18 @@ export default defineEventHandler(async (event) => {
 
     if (recipe?.status === 'failed') {
       await send('error', { reason: 'Extraction failed' })
+      await close()
+      return stream.send()
+    }
+
+    // Recipe not found or stuck in 'importing' without an active job
+    if (!recipe) {
+      await send('error', { reason: 'Recipe not found' })
+      await close()
+      return stream.send()
+    }
+    if (recipe.status === 'importing') {
+      await send('error', { reason: 'Extraction expired, please re-import' })
       await close()
       return stream.send()
     }
