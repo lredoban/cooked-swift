@@ -671,6 +671,7 @@ Cooked/
 Items to implement later when ready:
 
 - [ ] **Supabase RLS Policies** - Audit and enforce row-level security on all tables (recipes, menus, menu_recipes, grocery_lists, user_settings). RLS is enabled but policies need review.
+- [ ] **Scalable Job Store** - Current in-memory job store (jobs.ts) won't work with horizontal scaling. SSE listeners are in-memory callbacks that can't be shared across instances. Options: Supabase Realtime (subscribe to recipe row changes, eliminates in-memory store entirely), or Redis pub/sub + Nitro `useStorage()`. Supabase Realtime is preferred since the extraction already writes to DB.
 - [ ] **RevenueCat Paywall UI** - Use RevenueCat's native paywall (waiting for credentials)
 - [ ] **Annual Plan** - Add yearly subscription option to RevenueCat
 - [ ] **Code Quality Tooling** - Set up SwiftLint and SwiftFormat

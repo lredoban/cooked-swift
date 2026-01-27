@@ -8,17 +8,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Recipe ID is required' })
   }
 
-  // Set SSE headers
-  setResponseHeaders(event, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    Connection: 'keep-alive'
-  })
+  const stream = createEventStream(event)
 
-  const res = event.node.res
+  const send = async (eventName: string, data: unknown) => {
+    await stream.push(`event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`)
+  }
 
-  const send = (eventName: string, data: unknown) => {
-    res.write(`event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`)
+  const close = async () => {
+    await stream.close()
   }
 
   // Check if extraction already completed (reconnection case)
@@ -29,19 +26,19 @@ export default defineEventHandler(async (event) => {
     }
     // Replay any past progress events
     for (const progress of job.progress) {
-      send('progress', progress)
+      await send('progress', progress)
     }
 
     // If already done, emit final event immediately
     if (job.status === 'pending_review' && job.result) {
-      send('complete', job.result)
-      res.end()
-      return
+      await send('complete', job.result)
+      await close()
+      return stream.send()
     }
     if (job.status === 'failed') {
-      send('error', { reason: job.error || 'Extraction failed' })
-      res.end()
-      return
+      await send('error', { reason: job.error || 'Extraction failed' })
+      await close()
+      return stream.send()
     }
   } else {
     // No in-memory job — check database for already-completed extraction
@@ -54,62 +51,52 @@ export default defineEventHandler(async (event) => {
       .single()
 
     if (recipe?.status === 'pending_review' || recipe?.status === 'active') {
-      send('complete', {
+      await send('complete', {
         ingredients: recipe.ingredients || [],
         steps: recipe.steps || [],
         tags: recipe.tags || []
       })
-      res.end()
-      return
+      await close()
+      return stream.send()
     }
 
     if (recipe?.status === 'failed') {
-      send('error', { reason: 'Extraction failed' })
-      res.end()
-      return
+      await send('error', { reason: 'Extraction failed' })
+      await close()
+      return stream.send()
     }
   }
 
   // Subscribe to live updates
-  const listener = (eventName: string, data: unknown) => {
-    send(eventName, data)
+  const listener = async (eventName: string, data: unknown) => {
+    await send(eventName, data)
     if (eventName === 'complete' || eventName === 'error') {
       jobStore.unsubscribe(recipeId, listener)
-      res.end()
+      await close()
     }
   }
 
   jobStore.subscribe(recipeId, listener)
 
   // Re-check job status after subscribing to avoid race condition
-  // (job may have completed between initial check and subscribe)
   const updatedJob = jobStore.get(recipeId)
   if (updatedJob?.status === 'pending_review' && updatedJob.result) {
-    send('complete', updatedJob.result)
+    await send('complete', updatedJob.result)
     jobStore.unsubscribe(recipeId, listener)
-    res.end()
-    return
+    await close()
+    return stream.send()
   }
   if (updatedJob?.status === 'failed') {
-    send('error', { reason: updatedJob.error || 'Extraction failed' })
+    await send('error', { reason: updatedJob.error || 'Extraction failed' })
     jobStore.unsubscribe(recipeId, listener)
-    res.end()
-    return
+    await close()
+    return stream.send()
   }
 
   // Clean up on disconnect
-  res.on('close', () => {
+  stream.onClosed(async () => {
     jobStore.unsubscribe(recipeId, listener)
   })
 
-  // Keep-alive ping every 30s
-  const keepAlive = setInterval(() => {
-    if (!res.closed) {
-      res.write(': keepalive\n\n')
-    } else {
-      clearInterval(keepAlive)
-    }
-  }, 30000)
-
-  res.on('close', () => clearInterval(keepAlive))
+  return stream.send()
 })
