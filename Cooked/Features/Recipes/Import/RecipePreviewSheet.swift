@@ -313,7 +313,7 @@ struct RecipePreviewSheet: View {
             Button {
                 Task {
                     if let userId = supabase.authUser?.id {
-                        await recipeState.confirmRecipe(userId: userId)
+                        await recipeState.confirmRecipe(userId: userId, editedTitle: editableTitle)
                     }
                 }
             } label: {

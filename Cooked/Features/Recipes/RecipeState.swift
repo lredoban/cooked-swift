@@ -319,7 +319,7 @@ final class RecipeState {
     }
 
     /// User confirms the imported recipe (review → active).
-    func confirmRecipe(userId: UUID) async {
+    func confirmRecipe(userId: UUID, editedTitle: String? = nil) async {
         guard let recipeId = importingRecipeId else { return }
 
         isSaving = true
@@ -327,6 +327,12 @@ final class RecipeState {
         do {
             var recipe = try await recipeService.fetchRecipe(id: recipeId)
             recipe.importStatus = .active
+
+            // Update title if user edited it
+            if let editedTitle = editedTitle, !editedTitle.isEmpty {
+                recipe.title = editedTitle
+            }
+
             let saved = try await recipeService.updateRecipe(recipe)
             updateLocalRecipe(saved)
             isShowingPreview = false
