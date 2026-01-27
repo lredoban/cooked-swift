@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
   setResponseHeaders(event, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
+    Connection: 'keep-alive'
   })
 
   const res = event.node.res
@@ -40,8 +40,7 @@ export default defineEventHandler(async (event) => {
       res.end()
       return
     }
-  }
-  else {
+  } else {
     // No in-memory job — check database for already-completed extraction
     const supabase = useSupabaseAdmin()
     const { data: recipe } = await supabase
@@ -77,6 +76,22 @@ export default defineEventHandler(async (event) => {
 
   jobStore.subscribe(recipeId, listener)
 
+  // Re-check job status after subscribing to avoid race condition
+  // (job may have completed between initial check and subscribe)
+  const updatedJob = jobStore.get(recipeId)
+  if (updatedJob?.status === 'pending_review' && updatedJob.result) {
+    send('complete', updatedJob.result)
+    jobStore.unsubscribe(recipeId, listener)
+    res.end()
+    return
+  }
+  if (updatedJob?.status === 'failed') {
+    send('error', { reason: updatedJob.error || 'Extraction failed' })
+    jobStore.unsubscribe(recipeId, listener)
+    res.end()
+    return
+  }
+
   // Clean up on disconnect
   res.on('close', () => {
     jobStore.unsubscribe(recipeId, listener)
@@ -86,8 +101,7 @@ export default defineEventHandler(async (event) => {
   const keepAlive = setInterval(() => {
     if (!res.closed) {
       res.write(': keepalive\n\n')
-    }
-    else {
+    } else {
       clearInterval(keepAlive)
     }
   }, 30000)

@@ -37,19 +37,20 @@ async function fetchOEmbed(url: string, platform: Platform): Promise<QuickMetada
     })
     if (!res.ok) return null
 
-    const data = await res.json() as Record<string, unknown>
+    const data = (await res.json()) as Record<string, unknown>
     return {
       title: String(data.title || 'Untitled'),
       source_name: String(data.author_name || data.provider_name || ''),
       image_url: typeof data.thumbnail_url === 'string' ? data.thumbnail_url : null
     }
-  }
-  catch {
+  } catch {
     return null
   }
 }
 
 async function fetchOgTags(url: string): Promise<QuickMetadata> {
+  const hostname = URL.canParse(url) ? new URL(url).hostname : 'unknown'
+
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(3000),
@@ -58,24 +59,29 @@ async function fetchOgTags(url: string): Promise<QuickMetadata> {
       }
     })
     if (!res.ok) {
-      return { title: 'Untitled', source_name: new URL(url).hostname, image_url: null }
+      return { title: 'Untitled', source_name: hostname, image_url: null }
     }
 
     const html = await res.text()
     const title = extractMeta(html, 'og:title') || extractTag(html, 'title') || 'Untitled'
     const image = extractMeta(html, 'og:image') || null
-    const siteName = extractMeta(html, 'og:site_name') || new URL(url).hostname
+    const siteName = extractMeta(html, 'og:site_name') || hostname
 
     return { title, source_name: siteName, image_url: image }
-  }
-  catch {
-    return { title: 'Untitled', source_name: new URL(url).hostname, image_url: null }
+  } catch {
+    return { title: 'Untitled', source_name: hostname, image_url: null }
   }
 }
 
 function extractMeta(html: string, property: string): string | undefined {
-  const re = new RegExp(`<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i')
-  const altRe = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${property}["']`, 'i')
+  const re = new RegExp(
+    `<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']+)["']`,
+    'i'
+  )
+  const altRe = new RegExp(
+    `<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${property}["']`,
+    'i'
+  )
   return re.exec(html)?.[1] || altRe.exec(html)?.[1]
 }
 

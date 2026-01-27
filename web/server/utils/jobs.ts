@@ -1,5 +1,5 @@
 export interface ExtractionResult {
-  ingredients: { text: string, quantity?: string }[]
+  ingredients: { text: string; quantity?: string }[]
   steps: string[]
   tags: string[]
 }
@@ -62,7 +62,7 @@ class JobStore {
     this.notify(recipeId, 'complete', result)
 
     // Clean up after 10 minutes
-    setTimeout(() => this.jobs.delete(recipeId), 10 * 60 * 1000)
+    setTimeout(() => this.cleanup(recipeId), 10 * 60 * 1000)
   }
 
   fail(recipeId: string, reason: string) {
@@ -73,7 +73,7 @@ class JobStore {
     job.error = reason
     this.notify(recipeId, 'error', { reason })
 
-    setTimeout(() => this.jobs.delete(recipeId), 10 * 60 * 1000)
+    setTimeout(() => this.cleanup(recipeId), 10 * 60 * 1000)
   }
 
   subscribe(recipeId: string, listener: JobListener) {
@@ -85,6 +85,11 @@ class JobStore {
 
   unsubscribe(recipeId: string, listener: JobListener) {
     this.listeners.get(recipeId)?.delete(listener)
+  }
+
+  private cleanup(recipeId: string) {
+    this.jobs.delete(recipeId)
+    this.listeners.delete(recipeId)
   }
 
   private notify(recipeId: string, event: string, data: unknown) {
