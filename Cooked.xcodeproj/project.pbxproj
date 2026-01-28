@@ -10,6 +10,7 @@
 		9E09AB1C2F22B564000D3506 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09AB1B2F22B564000D3506 /* Supabase */; };
 		9E09AB6B2F2384E4000D3506 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09AB6A2F2384E4000D3506 /* RevenueCat */; };
 		9E09AB6D2F2384E4000D3506 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09AB6C2F2384E4000D3506 /* RevenueCatUI */; };
+		9E09AB722F240000000D3506 /* EventSource in Frameworks */ = {isa = PBXBuildFile; productRef = 9E09AB712F240000000D3506 /* EventSource */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +75,7 @@
 				9E09AB6B2F2384E4000D3506 /* RevenueCat in Frameworks */,
 				9E09AB1C2F22B564000D3506 /* Supabase in Frameworks */,
 				9E09AB6D2F2384E4000D3506 /* RevenueCatUI in Frameworks */,
+				9E09AB722F240000000D3506 /* EventSource in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,6 +139,7 @@
 				9E09AB1B2F22B564000D3506 /* Supabase */,
 				9E09AB6A2F2384E4000D3506 /* RevenueCat */,
 				9E09AB6C2F2384E4000D3506 /* RevenueCatUI */,
+				9E09AB712F240000000D3506 /* EventSource */,
 			);
 			productName = Cooked;
 			productReference = 9E09AACC2F22AA03000D3506 /* Cooked.app */;
@@ -223,6 +226,7 @@
 			packageReferences = (
 				9E09AB1A2F22B564000D3506 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 				9E09AB692F2384E4000D3506 /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				9E09AB702F240000000D3506 /* XCRemoteSwiftPackageReference "EventSource" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9E09AACD2F22AA03000D3506 /* Products */;
@@ -633,6 +637,14 @@
 				minimumVersion = 5.55.3;
 			};
 		};
+		9E09AB702F240000000D3506 /* XCRemoteSwiftPackageReference "EventSource" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Recouse/EventSource";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.5;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -650,6 +662,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9E09AB692F2384E4000D3506 /* XCRemoteSwiftPackageReference "purchases-ios" */;
 			productName = RevenueCatUI;
+		};
+		9E09AB712F240000000D3506 /* EventSource */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E09AB702F240000000D3506 /* XCRemoteSwiftPackageReference "EventSource" */;
+			productName = EventSource;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

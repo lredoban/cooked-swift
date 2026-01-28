@@ -3,6 +3,7 @@ import { detectPlatform, detectSourceType } from '../../utils/platform'
 import { fetchQuickMetadata } from '../../utils/metadata'
 import { startExtraction } from '../../utils/extraction'
 import { jobStore } from '../../utils/jobs'
+import { logger } from '../../utils/logger'
 
 interface ImportBody {
   url: string
@@ -43,7 +44,7 @@ export default defineEventHandler(async (event) => {
   })
 
   if (insertError) {
-    console.error('[import] DB insert failed:', insertError)
+    logger.import.error('❌ DB insert failed:', insertError)
     throw createError({ statusCode: 500, statusMessage: 'Failed to create recipe' })
   }
 

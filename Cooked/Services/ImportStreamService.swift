@@ -1,4 +1,8 @@
+import EventSource
 import Foundation
+import os.log
+
+private let logger = Logger(subsystem: "com.cooked.app", category: "SSE")
 
 /// Events emitted by the import SSE stream.
 enum ImportStreamEvent: Sendable {
@@ -15,6 +19,8 @@ actor ImportStreamService {
     static let shared = ImportStreamService()
 
     private let decoder = JSONDecoder()
+    private let supabase = SupabaseService.shared
+    private let eventSource = EventSource(timeoutInterval: 120)
 
     /// Opens an SSE connection and yields events as they arrive.
     ///
@@ -22,66 +28,75 @@ actor ImportStreamService {
     /// - Returns: An `AsyncThrowingStream` of ``ImportStreamEvent``
     func streamEvents(for recipeId: UUID) -> AsyncThrowingStream<ImportStreamEvent, Error> {
         AsyncThrowingStream { continuation in
-            let task = Task {
-                do {
-                    let endpoint = AppConfig.backendURL
-                        .appendingPathComponent("api/recipes/\(recipeId.uuidString)/stream")
+            Task { [supabase, eventSource] in
+                let endpoint = AppConfig.backendURL
+                    .appendingPathComponent("api/recipes/\(recipeId.uuidString)/stream")
 
-                    var request = URLRequest(url: endpoint)
-                    request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
-                    request.timeoutInterval = 120
+                logger.info("[SSE] Connecting to stream: \(endpoint.absoluteString)")
 
-                    let (bytes, response) = try await URLSession.shared.bytes(for: request)
+                var request = URLRequest(url: endpoint)
+                request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
+                request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
 
-                    guard let httpResponse = response as? HTTPURLResponse,
-                          httpResponse.statusCode == 200 else {
-                        continuation.finish(throwing: RecipeServiceError.networkError)
+                // Add auth header
+                if let token = try? await supabase.client.auth.session.accessToken {
+                    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                    logger.debug("[SSE] Auth token added to request")
+                } else {
+                    logger.warning("[SSE] No auth token available")
+                }
+
+                let dataTask = eventSource.dataTask(for: request)
+
+                for await event in dataTask.events() {
+                    switch event {
+                    case .open:
+                        logger.info("[SSE] Stream connected")
+
+                    case .event(let serverEvent):
+                        let eventType = serverEvent.event ?? "message"
+                        let eventData = serverEvent.data ?? ""
+
+                        logger.debug("[SSE] Event: \(eventType), data length: \(eventData.count)")
+
+                        if let parsed = parseEvent(type: eventType, data: eventData) {
+                            logger.info("[SSE] Parsed event: \(eventType)")
+                            continuation.yield(parsed)
+
+                            // Terminal events
+                            if case .complete = parsed {
+                                logger.info("[SSE] Stream complete")
+                                continuation.finish()
+                                return
+                            }
+                            if case .error = parsed {
+                                logger.error("[SSE] Error event received")
+                                continuation.finish()
+                                return
+                            }
+                        }
+
+                    case .error(let error):
+                        logger.error("[SSE] Stream error: \(error.localizedDescription)")
+                        continuation.finish(throwing: error)
+                        return
+
+                    case .closed:
+                        logger.info("[SSE] Stream closed")
+                        continuation.finish()
                         return
                     }
-
-                    var currentEvent = ""
-                    var currentData = ""
-
-                    for try await line in bytes.lines {
-                        if line.hasPrefix("event:") {
-                            currentEvent = String(line.dropFirst(6)).trimmingCharacters(in: .whitespaces)
-                        } else if line.hasPrefix("data:") {
-                            currentData = String(line.dropFirst(5)).trimmingCharacters(in: .whitespaces)
-                        } else if line.isEmpty {
-                            // Empty line = end of event
-                            if !currentEvent.isEmpty, !currentData.isEmpty {
-                                if let event = parseEvent(type: currentEvent, data: currentData) {
-                                    continuation.yield(event)
-                                    if case .complete = event {
-                                        continuation.finish()
-                                        return
-                                    }
-                                    if case .error = event {
-                                        continuation.finish()
-                                        return
-                                    }
-                                }
-                            }
-                            currentEvent = ""
-                            currentData = ""
-                        }
-                    }
-
-                    // Stream ended without complete/error event
-                    continuation.finish()
-                } catch {
-                    continuation.finish(throwing: error)
                 }
-            }
 
-            continuation.onTermination = { _ in
-                task.cancel()
+                // Stream ended without terminal event
+                logger.warning("[SSE] Stream ended without complete/error event")
+                continuation.finish()
             }
         }
     }
 
     private func parseEvent(type: String, data: String) -> ImportStreamEvent? {
-        guard let jsonData = data.data(using: .utf8) else { return nil }
+        guard !data.isEmpty, let jsonData = data.data(using: .utf8) else { return nil }
 
         switch type {
         case "progress":

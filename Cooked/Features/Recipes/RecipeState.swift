@@ -1,4 +1,7 @@
 import Foundation
+import os.log
+
+private let logger = Logger(subsystem: "com.cooked.app", category: "Import")
 
 enum RecipeSortOption: String, CaseIterable, Identifiable {
     case recent = "Recent"
@@ -169,11 +172,14 @@ final class RecipeState {
     func triggerImport() async {
         guard !importURL.isEmpty else { return }
 
+        logger.info("[Import] 🚀 Triggering import for URL: \(self.importURL)")
         importStage = .triggering
         importError = nil
 
         do {
+            logger.info("[Import] 📤 Calling trigger endpoint...")
             let metadata = try await recipeService.triggerImport(from: importURL)
+            logger.info("[Import] ✅ Trigger success - recipeId: \(metadata.recipeId), title: \(metadata.title), platform: \(metadata.platform ?? "unknown")")
             importMetadata = metadata
             importingRecipeId = metadata.recipeId
             importStage = .waitingForStream
@@ -183,11 +189,16 @@ final class RecipeState {
             isShowingPreview = true
 
             // Subscribe to SSE stream
+            logger.info("[Import] 🔌 Subscribing to SSE stream...")
             subscribeToStream(recipeId: metadata.recipeId)
 
             // Start background timeout timer
+            let platform = metadata.platform
+            let timeout = (platform == "tiktok" || platform == "instagram" || platform == "youtube") ? 20 : 8
+            logger.info("[Import] ⏱️ Starting background timer: \(timeout)s timeout for platform: \(platform ?? "website")")
             startBackgroundTimer()
         } catch {
+            logger.error("[Import] ❌ Trigger failed: \(error.localizedDescription)")
             importError = error
             importStage = .failed(reason: error.localizedDescription)
         }
@@ -196,19 +207,24 @@ final class RecipeState {
     /// Subscribes to SSE events for extraction progress.
     private func subscribeToStream(recipeId: UUID) {
         streamTask?.cancel()
+        logger.info("[Import] 🔄 Creating new stream subscription for recipe: \(recipeId)")
         streamTask = Task { [weak self] in
             guard let self else { return }
             do {
                 let stream = await streamService.streamEvents(for: recipeId)
+                logger.info("[Import] 📡 Stream subscription active, awaiting events...")
                 for try await event in stream {
                     await MainActor.run {
                         self.handleStreamEvent(event)
                     }
                 }
+                logger.info("[Import] ✅ Stream completed normally")
             } catch {
                 // Stream ended or failed — fall back to polling
+                logger.warning("[Import] ⚠️ Stream failed/ended: \(error.localizedDescription) — falling back to polling")
                 await MainActor.run {
                     if self.isImporting {
+                        logger.info("[Import] 🔄 Starting polling fallback...")
                         Task { await self.pollForCompletion(recipeId: recipeId) }
                     }
                 }
@@ -222,11 +238,13 @@ final class RecipeState {
 
         switch event {
         case .progress(let stage, let message):
+            logger.info("[Import] 📊 Progress event - stage: \(stage), message: \(message)")
             importStage = .progress(stage: stage, message: message)
             // Reset the background timer on each progress event
             startBackgroundTimer()
 
         case .complete(let ingredients, let steps, let tags):
+            logger.info("[Import] 🎉 Complete event - \(ingredients.count) ingredients, \(steps.count) steps, \(tags.count) tags")
             importStage = .complete
             // Update the local recipe list — fetch the full recipe
             if let recipeId = importingRecipeId {
@@ -234,6 +252,7 @@ final class RecipeState {
             }
 
         case .error(let reason):
+            logger.error("[Import] ❌ Error event: \(reason)")
             importStage = .failed(reason: reason)
         }
     }
@@ -245,11 +264,14 @@ final class RecipeState {
         let platform = importMetadata?.platform
         let timeout: TimeInterval = (platform == "tiktok" || platform == "instagram" || platform == "youtube") ? 20 : 8
 
+        logger.debug("[Import] ⏱️ Background timer started: \(Int(timeout))s")
+
         backgroundTimerTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(timeout))
             guard !Task.isCancelled, let self else { return }
             await MainActor.run {
                 if self.isImporting {
+                    logger.info("[Import] ⏰ Background timer fired — suggesting to continue browsing")
                     self.importStage = .backgrounded
                 }
             }
@@ -258,24 +280,34 @@ final class RecipeState {
 
     /// Polling fallback when SSE connection drops.
     private func pollForCompletion(recipeId: UUID) async {
-        for _ in 0..<40 { // ~2 minutes of polling
+        logger.info("[Import] 🔄 Starting polling fallback for recipe: \(recipeId)")
+        for attempt in 0..<40 { // ~2 minutes of polling
             try? await Task.sleep(for: .seconds(3))
-            guard isImporting else { return }
+            guard isImporting else {
+                logger.info("[Import] 🛑 Polling stopped — no longer importing")
+                return
+            }
 
+            logger.debug("[Import] 📡 Poll attempt \(attempt + 1)/40...")
             do {
                 let recipe = try await recipeService.fetchRecipe(id: recipeId)
+                logger.debug("[Import] 📦 Poll response - status: \(recipe.importStatus.rawValue)")
                 if recipe.importStatus == .pendingReview || recipe.importStatus == .active {
+                    logger.info("[Import] ✅ Polling found complete recipe!")
                     importStage = .complete
                     updateLocalRecipe(recipe)
                     return
                 } else if recipe.importStatus == .failed {
+                    logger.error("[Import] ❌ Polling found failed recipe")
                     importStage = .failed(reason: "Extraction failed")
                     return
                 }
             } catch {
+                logger.warning("[Import] ⚠️ Poll error: \(error.localizedDescription) — continuing...")
                 // Keep polling
             }
         }
+        logger.error("[Import] ❌ Polling exhausted (40 attempts)")
     }
 
     /// Fetches the completed recipe and updates the local list.
@@ -299,12 +331,14 @@ final class RecipeState {
 
     /// User taps "Continue Browsing" — dismiss preview, extraction continues server-side.
     func backgroundImport() {
+        logger.info("[Import] 🏃 User chose to continue browsing — backgrounding import")
         isShowingPreview = false
         importStage = .backgrounded
 
         // Keep stream subscription alive for notification purposes
         // The recipe will show with an "importing" badge in the list
         if let metadata = importMetadata {
+            logger.info("[Import] 📝 Adding placeholder recipe to list: \(metadata.title)")
             let placeholderRecipe = Recipe(
                 id: metadata.recipeId,
                 userId: UUID(), // Will be corrected on fetch
@@ -320,24 +354,32 @@ final class RecipeState {
 
     /// User confirms the imported recipe (review → active).
     func confirmRecipe(userId: UUID, editedTitle: String? = nil) async {
-        guard let recipeId = importingRecipeId else { return }
+        guard let recipeId = importingRecipeId else {
+            logger.warning("[Import] ⚠️ confirmRecipe called but no importingRecipeId")
+            return
+        }
 
+        logger.info("[Import] 💾 Confirming recipe: \(recipeId), editedTitle: \(editedTitle ?? "(none)")")
         isSaving = true
 
         do {
             var recipe = try await recipeService.fetchRecipe(id: recipeId)
+            logger.debug("[Import] 📦 Fetched recipe - original title: \(recipe.title)")
             recipe.importStatus = .active
 
             // Update title if user edited it
             if let editedTitle = editedTitle, !editedTitle.isEmpty {
+                logger.info("[Import] ✏️ Updating title from '\(recipe.title)' to '\(editedTitle)'")
                 recipe.title = editedTitle
             }
 
             let saved = try await recipeService.updateRecipe(recipe)
+            logger.info("[Import] ✅ Recipe saved successfully: \(saved.title)")
             updateLocalRecipe(saved)
             isShowingPreview = false
             resetImportState()
         } catch {
+            logger.error("[Import] ❌ Failed to save recipe: \(error.localizedDescription)")
             self.error = error
         }
 
