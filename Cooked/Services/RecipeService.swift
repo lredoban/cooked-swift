@@ -128,9 +128,23 @@ actor RecipeService {
     /// - Parameter recipe: The recipe with updated fields
     /// - Returns: The updated recipe
     func updateRecipe(_ recipe: Recipe) async throws -> Recipe {
+        // Only send mutable fields to avoid Supabase RLS/column conflicts
+        let updatePayload = RecipeUpdate(
+            title: recipe.title,
+            sourceType: recipe.sourceType,
+            sourceUrl: recipe.sourceUrl,
+            sourceName: recipe.sourceName,
+            ingredients: recipe.ingredients,
+            steps: recipe.steps,
+            tags: recipe.tags,
+            imageUrl: recipe.imageUrl,
+            timesCooked: recipe.timesCooked,
+            status: recipe.importStatus
+        )
+
         let updated: [Recipe] = try await supabase.client
             .from("recipes")
-            .update(recipe)
+            .update(updatePayload)
             .eq("id", value: recipe.id.uuidString)
             .select()
             .execute()
@@ -140,6 +154,33 @@ actor RecipeService {
             throw RecipeServiceError.saveFailed("No recipe returned from update")
         }
         return result
+    }
+
+    /// Partial update payload containing only mutable recipe fields.
+    private struct RecipeUpdate: Encodable {
+        let title: String
+        let sourceType: Recipe.SourceType?
+        let sourceUrl: String?
+        let sourceName: String?
+        let ingredients: [Ingredient]
+        let steps: [String]
+        let tags: [String]
+        let imageUrl: String?
+        let timesCooked: Int
+        let status: Recipe.ImportStatus
+
+        enum CodingKeys: String, CodingKey {
+            case title
+            case sourceType = "source_type"
+            case sourceUrl = "source_url"
+            case sourceName = "source_name"
+            case ingredients
+            case steps
+            case tags
+            case imageUrl = "image_url"
+            case timesCooked = "times_cooked"
+            case status
+        }
     }
 
     // MARK: - Legacy Extraction (deprecated — use triggerImport)

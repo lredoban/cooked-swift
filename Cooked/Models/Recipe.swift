@@ -88,7 +88,7 @@ struct Recipe: Codable, Identifiable, Sendable, Hashable {
         case imageUrl = "image_url"
         case createdAt = "created_at"
         case timesCooked = "times_cooked"
-        case importStatus = "import_status"
+        case importStatus = "status"
     }
 
     /// Creates a recipe by decoding from Supabase JSON response.
@@ -162,7 +162,13 @@ struct Recipe: Codable, Identifiable, Sendable, Hashable {
     }
 
     static func == (lhs: Recipe, rhs: Recipe) -> Bool {
-        lhs.id == rhs.id
+        lhs.id == rhs.id &&
+        lhs.title == rhs.title &&
+        lhs.importStatus == rhs.importStatus &&
+        lhs.ingredients == rhs.ingredients &&
+        lhs.steps == rhs.steps &&
+        lhs.tags == rhs.tags &&
+        lhs.timesCooked == rhs.timesCooked
     }
 
     func hash(into hasher: inout Hasher) {

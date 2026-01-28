@@ -22,6 +22,7 @@ enum ImportStage: Sendable {
 }
 
 @Observable
+@MainActor
 final class RecipeState {
     // MARK: - Recipe Library State
 
