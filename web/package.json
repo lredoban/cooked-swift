@@ -23,6 +23,7 @@
     "@supabase/supabase-js": "^2.93.1",
     "@unhead/vue": "^2.1.2",
     "@vueuse/nuxt": "14.1.0",
+    "consola": "^3.4.2",
     "nuxt": "^4.2.2",
     "tailwindcss": "^4.1.18",
     "ytdlp-nodejs": "^3.4.1"

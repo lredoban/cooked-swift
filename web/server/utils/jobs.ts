@@ -1,3 +1,5 @@
+import { logger } from './logger'
+
 export interface ExtractionResult {
   ingredients: { text: string; quantity?: string }[]
   steps: string[]
@@ -30,6 +32,7 @@ class JobStore {
   private listeners = new Map<string, Set<JobListener>>()
 
   create(recipeId: string, userId: string): Job {
+    logger.jobs.info(`📝 Creating job - recipeId: ${recipeId}`)
     const job: Job = {
       recipeId,
       userId,
@@ -39,17 +42,24 @@ class JobStore {
       error: null
     }
     this.jobs.set(recipeId, job)
+    logger.jobs.debug(`✅ Job created - active: ${this.jobs.size}`)
     return job
   }
 
   get(recipeId: string): Job | undefined {
-    return this.jobs.get(recipeId)
+    const job = this.jobs.get(recipeId)
+    logger.jobs.debug(`🔍 Get job: ${job ? job.status : 'not found'}`)
+    return job
   }
 
   emitProgress(recipeId: string, stage: string, message: string) {
     const job = this.jobs.get(recipeId)
-    if (!job) return
+    if (!job) {
+      logger.jobs.warn(`⚠️ emitProgress: no job for ${recipeId}`)
+      return
+    }
 
+    logger.jobs.debug(`📊 Progress - ${stage}: ${message}`)
     const event: ProgressEvent = { stage, message }
     job.progress.push(event)
     this.notify(recipeId, 'progress', event)
@@ -57,8 +67,12 @@ class JobStore {
 
   complete(recipeId: string, result: ExtractionResult) {
     const job = this.jobs.get(recipeId)
-    if (!job) return
+    if (!job) {
+      logger.jobs.warn(`⚠️ complete: no job for ${recipeId}`)
+      return
+    }
 
+    logger.jobs.info(`🎉 Complete - ingredients: ${result.ingredients.length}, steps: ${result.steps.length}`)
     job.status = 'pending_review'
     job.result = result
     this.notify(recipeId, 'complete', result)
@@ -69,8 +83,12 @@ class JobStore {
 
   fail(recipeId: string, reason: string) {
     const job = this.jobs.get(recipeId)
-    if (!job) return
+    if (!job) {
+      logger.jobs.warn(`⚠️ fail: no job for ${recipeId}`)
+      return
+    }
 
+    logger.jobs.error(`❌ Failed - ${reason}`)
     job.status = 'failed'
     job.error = reason
     this.notify(recipeId, 'error', { reason })
@@ -83,23 +101,30 @@ class JobStore {
       this.listeners.set(recipeId, new Set())
     }
     this.listeners.get(recipeId)!.add(listener)
+    logger.jobs.debug(`👂 Subscribed - listeners: ${this.listeners.get(recipeId)!.size}`)
   }
 
   unsubscribe(recipeId: string, listener: JobListener) {
     this.listeners.get(recipeId)?.delete(listener)
+    logger.jobs.debug(`🔇 Unsubscribed - remaining: ${this.listeners.get(recipeId)?.size || 0}`)
   }
 
   private cleanup(recipeId: string) {
+    logger.jobs.debug(`🧹 Cleaning up: ${recipeId}`)
     this.jobs.delete(recipeId)
     this.listeners.delete(recipeId)
   }
 
   private notify(recipeId: string, event: string, data: unknown) {
     const listeners = this.listeners.get(recipeId)
-    if (!listeners) return
+    if (!listeners) {
+      logger.jobs.debug(`⚠️ No listeners`)
+      return
+    }
+    logger.jobs.debug(`📢 Notifying ${listeners.size} listener(s) of '${event}'`)
     for (const listener of listeners) {
       Promise.resolve(listener(event, data)).catch((err) => {
-        console.error('[jobs] Listener error:', err)
+        logger.jobs.error('❌ Listener error:', err)
       })
     }
   }

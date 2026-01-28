@@ -121,7 +121,7 @@ struct ImportRecipeSheet: View {
             }
             .padding(.horizontal)
 
-            if let error = recipeState.extractionError {
+            if let error = recipeState.importError {
                 Text(error.localizedDescription)
                     .font(.caption)
                     .foregroundStyle(.red)
@@ -132,10 +132,10 @@ struct ImportRecipeSheet: View {
 
             Button {
                 Task {
-                    await recipeState.extractRecipe()
+                    await recipeState.triggerImport()
                 }
             } label: {
-                if recipeState.isExtracting {
+                if recipeState.importStage != nil, case .triggering = recipeState.importStage {
                     ProgressView()
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -148,7 +148,7 @@ struct ImportRecipeSheet: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(.orange)
-            .disabled(recipeState.importURL.isEmpty || recipeState.isExtracting)
+            .disabled(recipeState.importURL.isEmpty || recipeState.isImporting)
             .padding(.horizontal)
             .padding(.bottom)
         }

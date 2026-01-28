@@ -1,5 +1,6 @@
 import { YtDlp } from 'ytdlp-nodejs'
 import { jobStore, type ExtractionResult } from './jobs'
+import { logger } from './logger'
 
 const ytdlp = new YtDlp()
 
@@ -10,7 +11,7 @@ const ytdlp = new YtDlp()
  */
 export function startExtraction(recipeId: string, url: string, platform: string) {
   extractRecipe(recipeId, url, platform).catch((err) => {
-    console.error('[extraction] Fatal error:', err)
+    logger.extraction.error('💥 Fatal error:', err)
     jobStore.fail(recipeId, 'Internal extraction error')
   })
 }
@@ -60,7 +61,7 @@ async function extractRecipe(recipeId: string, url: string, platform: string) {
       .eq('id', recipeId)
 
     if (updateError) {
-      console.error('[extraction] DB update failed:', updateError)
+      logger.extraction.error('❌ DB update failed:', updateError)
       jobStore.fail(recipeId, 'Failed to save extracted data')
       await supabase.from('recipes').update({ status: 'failed' }).eq('id', recipeId)
       return
@@ -69,7 +70,7 @@ async function extractRecipe(recipeId: string, url: string, platform: string) {
     jobStore.complete(recipeId, result)
   } catch (err) {
     const reason = err instanceof Error ? err.message : 'Extraction failed'
-    console.error('[extraction] Error:', reason)
+    logger.extraction.error('❌ Error:', reason)
     jobStore.fail(recipeId, reason)
     await supabase
       .from('recipes')

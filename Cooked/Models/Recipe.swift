@@ -50,6 +50,9 @@ struct Recipe: Codable, Identifiable, Sendable, Hashable {
     /// Number of times the user has cooked this recipe
     var timesCooked: Int
 
+    /// Current import status for async extraction flow
+    var importStatus: ImportStatus
+
     /// The source type for how a recipe was imported into the app.
     enum SourceType: String, Codable, Sendable {
         /// Imported from a video platform (TikTok, Instagram, YouTube)
@@ -58,6 +61,18 @@ struct Recipe: Codable, Identifiable, Sendable, Hashable {
         case url
         /// Manually entered by the user
         case manual
+    }
+
+    /// Import lifecycle status for async extraction flow.
+    enum ImportStatus: String, Codable, Sendable {
+        /// Metadata saved, extraction in progress
+        case importing
+        /// Extraction complete, user hasn't reviewed yet
+        case pendingReview = "pending_review"
+        /// User has reviewed and saved the recipe
+        case active
+        /// Extraction failed
+        case failed
     }
 
     enum CodingKeys: String, CodingKey {
@@ -73,6 +88,7 @@ struct Recipe: Codable, Identifiable, Sendable, Hashable {
         case imageUrl = "image_url"
         case createdAt = "created_at"
         case timesCooked = "times_cooked"
+        case importStatus = "status"
     }
 
     /// Creates a recipe by decoding from Supabase JSON response.
@@ -95,6 +111,7 @@ struct Recipe: Codable, Identifiable, Sendable, Hashable {
         imageUrl = try container.decodeIfPresent(String.self, forKey: .imageUrl)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         timesCooked = (try? container.decodeIfPresent(Int.self, forKey: .timesCooked)) ?? 0
+        importStatus = (try? container.decodeIfPresent(ImportStatus.self, forKey: .importStatus)) ?? .active
     }
 
     /// Creates a new recipe with the specified properties.
@@ -126,7 +143,8 @@ struct Recipe: Codable, Identifiable, Sendable, Hashable {
         tags: [String] = [],
         imageUrl: String? = nil,
         createdAt: Date = Date(),
-        timesCooked: Int = 0
+        timesCooked: Int = 0,
+        importStatus: ImportStatus = .active
     ) {
         self.id = id
         self.userId = userId
@@ -140,10 +158,17 @@ struct Recipe: Codable, Identifiable, Sendable, Hashable {
         self.imageUrl = imageUrl
         self.createdAt = createdAt
         self.timesCooked = timesCooked
+        self.importStatus = importStatus
     }
 
     static func == (lhs: Recipe, rhs: Recipe) -> Bool {
-        lhs.id == rhs.id
+        lhs.id == rhs.id &&
+        lhs.title == rhs.title &&
+        lhs.importStatus == rhs.importStatus &&
+        lhs.ingredients == rhs.ingredients &&
+        lhs.steps == rhs.steps &&
+        lhs.tags == rhs.tags &&
+        lhs.timesCooked == rhs.timesCooked
     }
 
     func hash(into hasher: inout Hasher) {

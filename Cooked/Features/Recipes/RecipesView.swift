@@ -108,11 +108,24 @@ struct RecipesView: View {
                 } else {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(recipeState.filteredRecipes) { recipe in
-                            NavigationLink(value: recipe) {
+                            if recipe.importStatus == .pendingReview {
+                                Button {
+                                    recipeState.openPendingRecipe(recipe)
+                                } label: {
+                                    RecipeCard(recipe: recipe)
+                                }
+                                .buttonStyle(.plain)
+                                .contentShape(Rectangle())
+                            } else if recipe.importStatus == .importing {
                                 RecipeCard(recipe: recipe)
+                                    .opacity(0.7)
+                            } else {
+                                NavigationLink(value: recipe) {
+                                    RecipeCard(recipe: recipe)
+                                }
+                                .buttonStyle(.plain)
+                                .contentShape(Rectangle())
                             }
-                            .buttonStyle(.plain)
-                            .contentShape(Rectangle()) // Constrain tap area to visible bounds
                         }
                     }
                     .padding(.horizontal)
