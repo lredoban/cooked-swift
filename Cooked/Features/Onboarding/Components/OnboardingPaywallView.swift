@@ -247,7 +247,12 @@ struct OnboardingPaywallView: View {
             package = subscriptionState.currentOffering?.monthly
         }
 
-        guard let package else { return }
+        guard let package else {
+            // No package available (e.g., during testing) - proceed anyway
+            OnboardingAnalytics.track(.trialStarted, properties: ["variant": variant.rawValue, "plan": selectedPlan == .annual ? "annual" : "monthly", "skipped": "no_package"])
+            onContinue()
+            return
+        }
 
         isPurchasing = true
         do {

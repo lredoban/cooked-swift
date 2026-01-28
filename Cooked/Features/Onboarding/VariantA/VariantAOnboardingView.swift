@@ -12,7 +12,7 @@ struct VariantAOnboardingView: View {
     @Environment(OnboardingState.self) private var onboardingState
 
     @State private var screen: Int = 0
-    private let totalScreens = 7
+    private let totalScreens = 6
     private let variant = OnboardingVariant.valueFirst
 
     var body: some View {
@@ -26,7 +26,6 @@ struct VariantAOnboardingView: View {
             case 3: magicMomentScreen
             case 4: quickWinScreen
             case 5: paywallScreen
-            case 6: accountScreen
             default: EmptyView()
             }
         }
@@ -160,19 +159,10 @@ struct VariantAOnboardingView: View {
             headline: onboardingState.personalizedHeadline,
             subheadline: onboardingState.personalizedSubheadline,
             variant: variant,
-            onContinue: { advance(screenType: .paywall) },
-            onSkip: { advance(screenType: .paywall) }
+            onContinue: { onboardingState.completeOnboarding() },
+            onSkip: { onboardingState.completeOnboarding() }
         )
         .onAppear { trackScreen(5, type: .paywall) }
-    }
-
-    // MARK: - Screen 7: Account
-
-    private var accountScreen: some View {
-        VariantAAccountView {
-            onboardingState.completeOnboarding()
-        }
-        .onAppear { trackScreen(6, type: .accountCreation) }
     }
 
     // MARK: - Helpers

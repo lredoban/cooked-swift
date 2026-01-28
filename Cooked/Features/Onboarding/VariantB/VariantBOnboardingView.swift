@@ -25,7 +25,6 @@ struct VariantBOnboardingView: View {
             case 3: householdScreen
             case 4: sourceScreen
             case 5: buildingAndPaywallScreen
-            case 6: accountScreen
             default: EmptyView()
             }
         }
@@ -174,19 +173,10 @@ struct VariantBOnboardingView: View {
         VariantBBuildingPaywallView(
             onboardingState: onboardingState,
             variant: variant,
-            onContinue: { advance(screenType: .paywall) },
-            onSkip: { advance(screenType: .paywall) }
+            onContinue: { onboardingState.completeOnboarding() },
+            onSkip: { onboardingState.completeOnboarding() }
         )
         .onAppear { trackScreen(5, type: .magicMoment) }
-    }
-
-    // MARK: - Screen 7: Account
-
-    private var accountScreen: some View {
-        VariantAAccountView {
-            onboardingState.completeOnboarding()
-        }
-        .onAppear { trackScreen(6, type: .accountCreation) }
     }
 
     // MARK: - Helpers

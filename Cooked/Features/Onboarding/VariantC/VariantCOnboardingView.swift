@@ -12,7 +12,6 @@ struct VariantCOnboardingView: View {
     @Environment(OnboardingState.self) private var onboardingState
 
     @State private var screen: Int = 0
-    @State private var skippedFirstPaywall = false
     private let variant = OnboardingVariant.instantGratification
 
     var body: some View {
@@ -26,7 +25,6 @@ struct VariantCOnboardingView: View {
             case 3: goalScreen
             case 4: frequencyScreen
             case 5: featureShowcaseScreen
-            case 6: softGateAccountScreen
             default: EmptyView()
             }
         }
@@ -59,10 +57,7 @@ struct VariantCOnboardingView: View {
             subheadline: "Plan meals, import recipes, and generate grocery lists — all in one app.",
             variant: variant,
             onContinue: { advance(screenType: .paywall) },
-            onSkip: {
-                skippedFirstPaywall = true
-                advance(screenType: .paywall)
-            }
+            onSkip: { advance(screenType: .paywall) }
         )
         .onAppear { trackScreen(2, type: .paywall) }
     }
@@ -138,19 +133,9 @@ struct VariantCOnboardingView: View {
 
     private var featureShowcaseScreen: some View {
         VariantCFeatureShowcaseView {
-            advance(screenType: .featureShowcase)
+            onboardingState.completeOnboarding()
         }
         .onAppear { trackScreen(5, type: .featureShowcase) }
-    }
-
-    // MARK: - Screen 7: Soft Gate + Account
-
-    private var softGateAccountScreen: some View {
-        VariantCSoftGateView(
-            showTrialOption: skippedFirstPaywall,
-            onComplete: { onboardingState.completeOnboarding() }
-        )
-        .onAppear { trackScreen(6, type: .softGate) }
     }
 
     // MARK: - Helpers
