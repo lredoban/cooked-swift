@@ -5,6 +5,7 @@ struct ActiveGroceryListView: View {
     @Environment(GroceryListState.self) private var groceryState
     @State private var showDeleteConfirmation = false
     @State private var showShareSheet = false
+    @State private var showShareLinkSheet = false
 
     private var groupedItems: [(category: Ingredient.IngredientCategory, items: [GroceryItem])] {
         let grouped = Dictionary(grouping: list.items) { $0.category }
@@ -53,10 +54,18 @@ struct ActiveGroceryListView: View {
             ToolbarItem(placement: .primaryAction) {
                 SwiftUI.Menu {
                     Button {
+                        showShareLinkSheet = true
+                    } label: {
+                        Label("Share with Link", systemImage: "link")
+                    }
+
+                    Button {
                         showShareSheet = true
                     } label: {
-                        Label("Share List", systemImage: "square.and.arrow.up")
+                        Label("Share as Text", systemImage: "doc.text")
                     }
+
+                    Divider()
 
                     Button(role: .destructive) {
                         showDeleteConfirmation = true
@@ -81,6 +90,132 @@ struct ActiveGroceryListView: View {
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(items: [groceryState.shareListAsText()])
         }
+        .sheet(isPresented: $showShareLinkSheet) {
+            ShareLinkSheet(list: list)
+        }
+    }
+}
+
+// MARK: - Share Link Sheet
+
+struct ShareLinkSheet: View {
+    let list: GroceryList
+    @Environment(GroceryListState.self) private var groceryState
+    @Environment(\.dismiss) private var dismiss
+    @State private var copied = false
+
+    private var shareURL: URL? {
+        guard let token = list.shareToken ?? groceryState.activeList?.shareToken else {
+            return nil
+        }
+        return AppConfig.backendURL.appendingPathComponent("list/\(token)")
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 24) {
+                // Icon
+                Image(systemName: "link.circle.fill")
+                    .font(.system(size: 60))
+                    .foregroundStyle(.green)
+                    .padding(.top, 24)
+
+                // Title
+                Text("Share Grocery List")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+
+                // Description
+                Text("Anyone with this link can view and check off items in real-time.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+
+                Spacer()
+
+                if let url = shareURL {
+                    // Link display
+                    VStack(spacing: 16) {
+                        Text(url.absoluteString)
+                            .font(.system(.body, design: .monospaced))
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color(.secondarySystemBackground))
+                            .cornerRadius(12)
+                            .padding(.horizontal)
+
+                        // Copy button
+                        Button {
+                            UIPasteboard.general.string = url.absoluteString
+                            copied = true
+
+                            // Reset after 2 seconds
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                copied = false
+                            }
+                        } label: {
+                            Label(copied ? "Copied!" : "Copy Link", systemImage: copied ? "checkmark" : "doc.on.doc")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.green)
+                        .padding(.horizontal)
+
+                        // Share button
+                        ShareLink(item: url) {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .padding(.horizontal)
+                    }
+
+                    // Revoke link button
+                    Button(role: .destructive) {
+                        Task {
+                            await groceryState.revokeShareLink()
+                        }
+                    } label: {
+                        Text("Revoke Link")
+                            .font(.subheadline)
+                    }
+                    .padding(.top, 8)
+
+                } else {
+                    // Generate link
+                    VStack(spacing: 16) {
+                        if groceryState.isGeneratingShareLink {
+                            ProgressView()
+                                .padding()
+                        } else {
+                            Button {
+                                Task {
+                                    await groceryState.generateShareLink()
+                                }
+                            } label: {
+                                Label("Generate Share Link", systemImage: "link.badge.plus")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(.green)
+                            .padding(.horizontal)
+                        }
+                    }
+                }
+
+                Spacer()
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
 
@@ -202,7 +337,8 @@ struct ShareSheet: UIViewControllerRepresentable {
                     GroceryItem(text: "Pasta", quantity: "1 box", category: .pantry, isChecked: false)
                 ],
                 staplesConfirmed: ["salt", "pepper"],
-                createdAt: Date()
+                createdAt: Date(),
+                shareToken: nil
             )
         )
         .navigationTitle("Grocery List")

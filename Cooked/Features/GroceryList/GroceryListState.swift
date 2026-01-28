@@ -1,4 +1,5 @@
 import Foundation
+import Supabase
 
 @Observable
 final class GroceryListState {
@@ -63,6 +64,17 @@ final class GroceryListState {
     }
 
     private let groceryService = GroceryListService.shared
+    private let supabase = SupabaseService.shared
+
+    // MARK: - Realtime
+
+    private var realtimeChannel: RealtimeChannelV2?
+    private var realtimeTask: Task<Void, Never>?
+
+    // MARK: - Sharing
+
+    var isGeneratingShareLink = false
+    var shareURL: URL?
 
     // MARK: - Load Grocery List
 
@@ -195,6 +207,118 @@ final class GroceryListState {
             viewState = .empty
         } catch {
             viewState = .error(error.localizedDescription)
+        }
+    }
+
+    // MARK: - Realtime Subscription
+
+    /// Subscribe to realtime changes for the grocery list
+    func subscribeToChanges(listId: UUID) async {
+        // Unsubscribe from any existing channel first
+        await unsubscribeFromChanges()
+
+        let channel = supabase.client.channel("grocery-list-\(listId.uuidString)")
+
+        let changes = channel.postgresChange(
+            AnyAction.self,
+            schema: "public",
+            table: "grocery_lists",
+            filter: .eq("id", value: listId.uuidString)
+        )
+
+        realtimeChannel = channel
+
+        // Start listening for changes in a background task
+        realtimeTask = Task { [weak self] in
+            await channel.subscribe()
+
+            for await change in changes {
+                guard let self = self else { break }
+                await self.handleRealtimeUpdate(change)
+            }
+        }
+    }
+
+    /// Unsubscribe from realtime changes
+    func unsubscribeFromChanges() async {
+        realtimeTask?.cancel()
+        realtimeTask = nil
+
+        if let channel = realtimeChannel {
+            await channel.unsubscribe()
+            realtimeChannel = nil
+        }
+    }
+
+    /// Handle incoming realtime updates by refetching the list
+    private func handleRealtimeUpdate(_ action: AnyAction) async {
+        // Get the current list's menu ID for refetching
+        guard case .active(let currentList) = await MainActor.run(body: { self.viewState }) else {
+            return
+        }
+
+        switch action {
+        case .update:
+            // Refetch the list to get the updated data
+            // This is more reliable than trying to decode the realtime payload
+            do {
+                if let updatedList = try await groceryService.fetchGroceryList(menuId: currentList.menuId) {
+                    await MainActor.run {
+                        self.viewState = .active(updatedList)
+                    }
+                }
+            } catch {
+                print("[GroceryListState] Failed to refetch list after realtime update: \(error)")
+            }
+        case .delete:
+            await MainActor.run {
+                self.viewState = .empty
+            }
+        default:
+            break
+        }
+    }
+
+    // MARK: - Share Link
+
+    /// Generate a shareable link for the grocery list
+    func generateShareLink() async {
+        guard let list = activeList else { return }
+
+        isGeneratingShareLink = true
+
+        do {
+            let token = try await groceryService.generateShareToken(listId: list.id)
+
+            // Update local state with the new token
+            var updatedList = list
+            updatedList.shareToken = token
+            viewState = .active(updatedList)
+
+            // Build the share URL
+            shareURL = AppConfig.backendURL.appendingPathComponent("list/\(token)")
+        } catch {
+            // Handle error silently for now, user can retry
+            print("[GroceryListState] Failed to generate share link: \(error)")
+        }
+
+        isGeneratingShareLink = false
+    }
+
+    /// Revoke the shareable link
+    func revokeShareLink() async {
+        guard let list = activeList else { return }
+
+        do {
+            try await groceryService.revokeShareToken(listId: list.id)
+
+            // Update local state
+            var updatedList = list
+            updatedList.shareToken = nil
+            viewState = .active(updatedList)
+            shareURL = nil
+        } catch {
+            print("[GroceryListState] Failed to revoke share link: \(error)")
         }
     }
 

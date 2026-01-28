@@ -35,8 +35,18 @@ struct GroceryListView: View {
         .task {
             if let menuId = menuState.currentMenu?.id {
                 await groceryState.loadGroceryList(menuId: menuId)
+
+                // Subscribe to realtime changes if we have an active list
+                if let list = groceryState.activeList {
+                    await groceryState.subscribeToChanges(listId: list.id)
+                }
             } else {
                 groceryState.viewState = .empty
+            }
+        }
+        .onDisappear {
+            Task {
+                await groceryState.unsubscribeFromChanges()
             }
         }
     }

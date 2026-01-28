@@ -17,10 +17,10 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
 
   runtimeConfig: {
-    supabaseUrl: '',
     supabaseServiceKey: '',
-    supabaseAnonKey: '',
     public: {
+      supabaseUrl: '',
+      supabaseAnonKey: '',
       // Dev-only credentials to pre-fill /admin/import auth form.
       // Public is fine here — admin pages are blocked in production by dev-only middleware.
       devEmail: '',
