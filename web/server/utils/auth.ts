@@ -7,11 +7,15 @@ import type { H3Event } from 'h3'
  */
 export async function requireAuth(event: H3Event): Promise<string> {
   const authHeader = getHeader(event, 'authorization')
-  if (!authHeader?.startsWith('Bearer ')) {
+
+  // Query token fallback is for dev/testing only (e.g., admin SSE tester page).
+  // Native iOS app uses proper Authorization header - EventSource in browsers cannot set headers.
+  const queryToken = getQuery(event).token as string | undefined
+
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : queryToken
+  if (!token) {
     throw createError({ statusCode: 401, statusMessage: 'Missing authorization token' })
   }
-
-  const token = authHeader.slice(7)
   const supabase = useSupabaseUser(token)
 
   const { data, error } = await supabase.auth.getUser(token)

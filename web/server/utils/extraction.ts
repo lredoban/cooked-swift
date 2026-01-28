@@ -10,7 +10,7 @@ const ytdlp = new YtDlp()
  */
 export function startExtraction(recipeId: string, url: string, platform: string) {
   extractRecipe(recipeId, url, platform).catch((err) => {
-    console.error(`[extraction] Fatal error for ${recipeId}:`, err)
+    console.error('[extraction] Fatal error:', err)
     jobStore.fail(recipeId, 'Internal extraction error')
   })
 }
@@ -34,8 +34,7 @@ async function extractRecipe(recipeId: string, url: string, platform: string) {
 
       // Step 2: Download audio for transcription (if needed in future)
       // For now we extract from description/title metadata
-    }
-    else {
+    } else {
       // Website: fetch HTML and extract recipe structured data
       jobStore.emitProgress(recipeId, 'scraping_page', 'Scraping recipe page...')
       const pageData = await fetchPageContent(url)
@@ -61,23 +60,26 @@ async function extractRecipe(recipeId: string, url: string, platform: string) {
       .eq('id', recipeId)
 
     if (updateError) {
-      console.error(`[extraction] DB update failed for ${recipeId}:`, updateError)
+      console.error('[extraction] DB update failed:', updateError)
       jobStore.fail(recipeId, 'Failed to save extracted data')
       await supabase.from('recipes').update({ status: 'failed' }).eq('id', recipeId)
       return
     }
 
     jobStore.complete(recipeId, result)
-  }
-  catch (err) {
+  } catch (err) {
     const reason = err instanceof Error ? err.message : 'Extraction failed'
-    console.error(`[extraction] Error for ${recipeId}:`, reason)
+    console.error('[extraction] Error:', reason)
     jobStore.fail(recipeId, reason)
-    await supabase.from('recipes').update({ status: 'failed' }).eq('id', recipeId).catch(() => {})
+    await supabase
+      .from('recipes')
+      .update({ status: 'failed' })
+      .eq('id', recipeId)
+      .catch(() => {})
   }
 }
 
-async function fetchPageContent(url: string): Promise<{ title: string, description: string }> {
+async function fetchPageContent(url: string): Promise<{ title: string; description: string }> {
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(10000),
@@ -92,13 +94,12 @@ async function fetchPageContent(url: string): Promise<{ title: string, descripti
     // Fallback to raw text
     const title = extractMetaContent(html, 'og:title') || 'Untitled'
     return { title, description: html.replace(/<[^>]+>/g, ' ').slice(0, 5000) }
-  }
-  catch {
+  } catch {
     return { title: 'Untitled', description: '' }
   }
 }
 
-function extractJsonLdRecipe(html: string): { title: string, description: string } | null {
+function extractJsonLdRecipe(html: string): { title: string; description: string } | null {
   const scriptRe = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
   let match: RegExpExecArray | null
   while ((match = scriptRe.exec(html)) !== null) {
@@ -106,7 +107,10 @@ function extractJsonLdRecipe(html: string): { title: string, description: string
       const data = JSON.parse(match[1]) as Record<string, unknown>
       const items = Array.isArray(data) ? data : [data]
       for (const item of items) {
-        if (item['@type'] === 'Recipe' || (Array.isArray(item['@type']) && (item['@type'] as string[]).includes('Recipe'))) {
+        if (
+          item['@type'] === 'Recipe' ||
+          (Array.isArray(item['@type']) && (item['@type'] as string[]).includes('Recipe'))
+        ) {
           return {
             title: String(item.name || 'Untitled'),
             description: JSON.stringify(item)
@@ -121,14 +125,18 @@ function extractJsonLdRecipe(html: string): { title: string, description: string
           }
         }
       }
+    } catch {
+      /* skip invalid JSON */
     }
-    catch { /* skip invalid JSON */ }
   }
   return null
 }
 
 function extractMetaContent(html: string, property: string): string | undefined {
-  const re = new RegExp(`<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i')
+  const re = new RegExp(
+    `<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']+)["']`,
+    'i'
+  )
   return re.exec(html)?.[1]
 }
 
@@ -143,10 +151,14 @@ function parseRecipeFromText(title: string, text: string): ExtractionResult {
   try {
     const data = JSON.parse(text) as Record<string, unknown>
     return parseStructuredRecipe(data)
+  } catch {
+    /* not JSON, parse as text */
   }
-  catch { /* not JSON, parse as text */ }
 
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+  const lines = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
 
   const ingredients: ExtractionResult['ingredients'] = []
   const steps: string[] = []
@@ -161,7 +173,12 @@ function parseRecipeFromText(title: string, text: string): ExtractionResult {
       section = 'ingredients'
       continue
     }
-    if (lower.includes('instruction') || lower.includes('direction') || lower.includes('method') || lower.includes('step')) {
+    if (
+      lower.includes('instruction') ||
+      lower.includes('direction') ||
+      lower.includes('method') ||
+      lower.includes('step')
+    ) {
       section = 'steps'
       continue
     }
@@ -169,8 +186,7 @@ function parseRecipeFromText(title: string, text: string): ExtractionResult {
     if (section === 'ingredients' && line.length > 2) {
       const cleaned = line.replace(/^[-•*]\s*/, '')
       ingredients.push({ text: cleaned })
-    }
-    else if (section === 'steps' && line.length > 5) {
+    } else if (section === 'steps' && line.length > 5) {
       const cleaned = line.replace(/^\d+[.)]\s*/, '')
       steps.push(cleaned)
     }
@@ -178,7 +194,29 @@ function parseRecipeFromText(title: string, text: string): ExtractionResult {
 
   // Generate basic tags from title
   const titleWords = title.toLowerCase().split(/\s+/)
-  const foodKeywords = ['chicken', 'pasta', 'beef', 'salmon', 'salad', 'soup', 'cake', 'bread', 'rice', 'pizza', 'tacos', 'curry', 'steak', 'shrimp', 'tofu', 'vegan', 'vegetarian', 'dessert', 'breakfast', 'lunch', 'dinner']
+  const foodKeywords = [
+    'chicken',
+    'pasta',
+    'beef',
+    'salmon',
+    'salad',
+    'soup',
+    'cake',
+    'bread',
+    'rice',
+    'pizza',
+    'tacos',
+    'curry',
+    'steak',
+    'shrimp',
+    'tofu',
+    'vegan',
+    'vegetarian',
+    'dessert',
+    'breakfast',
+    'lunch',
+    'dinner'
+  ]
   for (const word of titleWords) {
     if (foodKeywords.includes(word)) {
       tags.push(word)
@@ -207,8 +245,7 @@ function parseStructuredRecipe(data: Record<string, unknown>): ExtractionResult 
     for (const step of rawInstructions) {
       if (typeof step === 'string') {
         steps.push(step)
-      }
-      else if (step && typeof step === 'object' && 'text' in step) {
+      } else if (step && typeof step === 'object' && 'text' in step) {
         steps.push(String((step as Record<string, unknown>).text))
       }
     }
@@ -224,7 +261,7 @@ function parseStructuredRecipe(data: Record<string, unknown>): ExtractionResult 
   if (Array.isArray(cuisine)) tags.push(...cuisine.map(String))
 
   const keywords = data.keywords
-  if (typeof keywords === 'string') tags.push(...keywords.split(',').map(k => k.trim()))
+  if (typeof keywords === 'string') tags.push(...keywords.split(',').map((k) => k.trim()))
   if (Array.isArray(keywords)) tags.push(...keywords.map(String))
 
   return { ingredients, steps, tags }
