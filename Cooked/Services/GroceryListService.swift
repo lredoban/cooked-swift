@@ -6,6 +6,7 @@ enum GroceryListServiceError: LocalizedError {
     case createFailed(String)
     case updateFailed(String)
     case deleteFailed(String)
+    case shareTokenGenerationFailed(String)
 
     var errorDescription: String? {
         switch self {
@@ -19,6 +20,8 @@ enum GroceryListServiceError: LocalizedError {
             return "Failed to update grocery list: \(message)"
         case .deleteFailed(let message):
             return "Failed to delete grocery list: \(message)"
+        case .shareTokenGenerationFailed(let message):
+            return "Failed to generate share link: \(message)"
         }
     }
 }
@@ -101,6 +104,51 @@ actor GroceryListService {
             .eq("id", value: listId.uuidString)
             .execute()
     }
+
+    // MARK: - Share Token Management
+
+    /// Generates a unique share token for the grocery list, enabling web access
+    func generateShareToken(listId: UUID) async throws -> String {
+        guard await supabase.authUser != nil else {
+            throw GroceryListServiceError.unauthorized
+        }
+
+        // Generate a URL-safe random token
+        let token = generateURLSafeToken()
+
+        let updatedLists: [GroceryList] = try await supabase.client
+            .from("grocery_lists")
+            .update(ShareTokenUpdateDTO(shareToken: token))
+            .eq("id", value: listId.uuidString)
+            .select()
+            .execute()
+            .value
+
+        guard updatedLists.first?.shareToken == token else {
+            throw GroceryListServiceError.shareTokenGenerationFailed("Token not saved")
+        }
+
+        return token
+    }
+
+    /// Revokes the share token, disabling web access
+    func revokeShareToken(listId: UUID) async throws {
+        guard await supabase.authUser != nil else {
+            throw GroceryListServiceError.unauthorized
+        }
+
+        try await supabase.client
+            .from("grocery_lists")
+            .update(ShareTokenUpdateDTO(shareToken: nil))
+            .eq("id", value: listId.uuidString)
+            .execute()
+    }
+
+    /// Generates a URL-safe random token (12 characters)
+    private func generateURLSafeToken() -> String {
+        let characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        return String((0..<12).map { _ in characters.randomElement()! })
+    }
 }
 
 // MARK: - DTOs
@@ -114,5 +162,13 @@ private struct GroceryListInsertDTO: Encodable {
         case menuId = "menu_id"
         case items
         case staplesConfirmed = "staples_confirmed"
+    }
+}
+
+private struct ShareTokenUpdateDTO: Encodable {
+    let shareToken: String?
+
+    enum CodingKeys: String, CodingKey {
+        case shareToken = "share_token"
     }
 }

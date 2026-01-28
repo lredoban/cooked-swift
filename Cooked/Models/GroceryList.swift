@@ -28,12 +28,16 @@ struct GroceryList: Codable, Identifiable, Sendable {
     /// When the list was generated
     let createdAt: Date
 
+    /// Token for sharing this list via web link (nil = not shared)
+    var shareToken: String?
+
     enum CodingKeys: String, CodingKey {
         case id
         case menuId = "menu_id"
         case items
         case staplesConfirmed = "staples_confirmed"
         case createdAt = "created_at"
+        case shareToken = "share_token"
     }
 }
 

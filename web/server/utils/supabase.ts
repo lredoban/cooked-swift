@@ -9,10 +9,10 @@ let _adminClient: SupabaseClient | null = null
 export function useSupabaseAdmin(): SupabaseClient {
   if (!_adminClient) {
     const config = useRuntimeConfig()
-    if (!config.supabaseUrl || !config.supabaseServiceKey) {
+    if (!config.public.supabaseUrl || !config.supabaseServiceKey) {
       throw new Error('Missing SUPABASE_URL or SUPABASE_SERVICE_KEY env vars')
     }
-    _adminClient = createClient(config.supabaseUrl, config.supabaseServiceKey)
+    _adminClient = createClient(config.public.supabaseUrl, config.supabaseServiceKey)
   }
   return _adminClient
 }
@@ -23,7 +23,7 @@ export function useSupabaseAdmin(): SupabaseClient {
  */
 export function useSupabaseUser(accessToken: string): SupabaseClient {
   const config = useRuntimeConfig()
-  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+  return createClient(config.public.supabaseUrl, config.public.supabaseAnonKey, {
     global: {
       headers: { Authorization: `Bearer ${accessToken}` }
     }
