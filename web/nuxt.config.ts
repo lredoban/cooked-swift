@@ -6,7 +6,8 @@ export default defineNuxtConfig({
     '@nuxt/a11y',
     '@nuxt/hints',
     '@nuxt/image',
-    '@nuxt/scripts'
+    '@nuxt/scripts',
+    '@vueuse/nuxt'
   ],
 
   devtools: {
@@ -18,7 +19,13 @@ export default defineNuxtConfig({
   runtimeConfig: {
     supabaseUrl: '',
     supabaseServiceKey: '',
-    supabaseAnonKey: ''
+    supabaseAnonKey: '',
+    public: {
+      // Dev-only credentials to pre-fill /admin/import auth form.
+      // Public is fine here — admin pages are blocked in production by dev-only middleware.
+      devEmail: '',
+      devPassword: ''
+    }
   },
 
   routeRules: {

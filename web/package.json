@@ -22,6 +22,7 @@
     "@nuxt/ui": "^4.4.0",
     "@supabase/supabase-js": "^2.93.1",
     "@unhead/vue": "^2.1.2",
+    "@vueuse/nuxt": "14.1.0",
     "nuxt": "^4.2.2",
     "tailwindcss": "^4.1.18",
     "ytdlp-nodejs": "^3.4.1"
@@ -35,10 +36,10 @@
     "typescript": "^5.9.3",
     "vue-tsc": "^3.2.4"
   },
+  "packageManager": "pnpm@10.28.1",
   "pnpm": {
     "onlyBuiltDependencies": [
       "ytdlp-nodejs"
     ]
-  },
-  "packageManager": "pnpm@10.28.1"
+  }
 }
