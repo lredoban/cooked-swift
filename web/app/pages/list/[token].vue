@@ -107,14 +107,18 @@ async function toggleItem(itemId: string) {
   const previousState = groceryList.value.items[itemIndex].is_checked
   groceryList.value.items[itemIndex].is_checked = !previousState
 
+  const newTimestamp = new Date().toISOString()
   const { error: updateError } = await supabase
     .from('grocery_lists')
-    .update({ items: groceryList.value.items, updated_at: new Date().toISOString() })
+    .update({ items: groceryList.value.items, updated_at: newTimestamp })
     .eq('share_token', token.value)
 
   updatingItems.value.delete(itemId)
 
-  if (updateError) {
+  if (!updateError) {
+    // Update local timestamp to prevent self-echo from realtime subscription
+    groceryList.value.updated_at = newTimestamp
+  } else {
     // Revert on error
     groceryList.value.items[itemIndex].is_checked = previousState
     toast.add({
