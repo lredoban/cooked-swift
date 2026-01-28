@@ -17,7 +17,10 @@ export default defineEventHandler(async (event) => {
 
   const stream = createEventStream(event)
 
+  let closed = false
+
   const send = async (eventName: string, data: unknown) => {
+    if (closed) return
     await stream.push({
       event: eventName,
       data: JSON.stringify(data)
@@ -25,6 +28,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const close = async () => {
+    if (closed) return
+    closed = true
     await stream.close()
   }
 

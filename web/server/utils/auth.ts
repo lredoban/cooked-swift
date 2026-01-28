@@ -10,7 +10,7 @@ export async function requireAuth(event: H3Event): Promise<string> {
 
   // Query token fallback is for dev/testing only (e.g., admin SSE tester page).
   // Native iOS app uses proper Authorization header - EventSource in browsers cannot set headers.
-  const queryToken = getQuery(event).token as string | undefined
+  const queryToken = import.meta.dev ? (getQuery(event).token as string | undefined) : undefined
 
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : queryToken
   if (!token) {
