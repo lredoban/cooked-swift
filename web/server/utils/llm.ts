@@ -52,7 +52,7 @@ interface OpenRouterResponse {
 const EXTRACTION_SYSTEM_PROMPT = `You are a recipe extraction assistant. Extract recipe information from the provided text (which may include video description, captions, or transcription).
 
 IMPORTANT RULES:
-1. Extract ingredients with quantities, units, and categorize each for shopping:
+1. Extract ALL ingredients with quantities, units, and categorize each for shopping. Include ingredients from ALL sections (e.g., "For the sauce", "For the topping", etc.):
    - produce: fruits, vegetables, herbs
    - meat: chicken, beef, pork, lamb
    - seafood: fish, shrimp, shellfish
@@ -84,6 +84,8 @@ IMPORTANT RULES:
    - 0.5-0.6: Partial info, missing ingredients or steps
    - 0.3-0.4: Minimal recipe info found
    - 0.1-0.2: Almost no recipe content
+
+7. NEVER return empty ingredients array if the text contains ingredient lists. Look for patterns like "4 oz", "1/2 cup", "1 teaspoon", measurements, and food items.
 
 Respond ONLY with valid JSON matching this schema:
 {
@@ -119,6 +121,8 @@ export async function extractWithLLM(
   if (transcript) textSources.push(`Audio Transcript:\n${transcript}`)
 
   const combinedText = textSources.join('\n\n---\n\n')
+
+  logger.extraction.debug(`🤖 LLM input (${combinedText.length} chars)`)
 
   const messages: OpenRouterMessage[] = [
     { role: 'system', content: EXTRACTION_SYSTEM_PROMPT },
@@ -162,7 +166,7 @@ export async function extractWithLLM(
 
     const result = JSON.parse(content) as LLMExtractionResult
 
-    logger.extraction.info(`✅ LLM extraction complete - ${result.ingredients.length} ingredients, ${result.steps.length} steps, confidence: ${result.confidence}`)
+    logger.extraction.info(`✅ LLM extraction: ${result.ingredients.length} ingredients, ${result.steps.length} steps, confidence: ${result.confidence}`)
     if (data.usage) {
       logger.extraction.debug(`📊 Tokens used: ${data.usage.total_tokens}`)
     }
