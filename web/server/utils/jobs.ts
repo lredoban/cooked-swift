@@ -4,6 +4,7 @@ export interface ExtractionResult {
   ingredients: {
     text: string
     quantity?: string
+    unit?: string
     category?: 'produce' | 'meat' | 'seafood' | 'dairy' | 'pantry' | 'frozen' | 'bakery' | 'other'
   }[]
   steps: string[]

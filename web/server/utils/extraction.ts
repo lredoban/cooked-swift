@@ -219,6 +219,7 @@ async function extractRecipe(recipeId: string, url: string, platform: string) {
       ingredients: llmResult.ingredients.map(ing => ({
         text: ing.text,
         quantity: ing.quantity,
+        unit: ing.unit,
         category: ing.category
       })),
       steps: llmResult.steps,
@@ -250,8 +251,8 @@ async function extractRecipe(recipeId: string, url: string, platform: string) {
       updateData.image_url = persistedImageUrl
     }
 
-    // Fix source name for Instagram (was showing "Instagram" instead of creator)
-    if (sourceName && platform === 'instagram') {
+    // Fix source name for Instagram/TikTok (was showing platform name instead of creator)
+    if (sourceName && (platform === 'instagram' || platform === 'tiktok')) {
       updateData.source_name = sourceName
     }
 
