@@ -4,8 +4,7 @@ import { logger } from './logger'
 import { extractWithLLM } from './llm'
 import { persistImage } from './storage'
 import { transcribeAudio, downloadAudio } from './transcription'
-
-const ytdlp = new YtDlp()
+import { getTikTokInfo, downloadTikTokAudio } from './tiktok'
 
 interface VideoInfo {
   title: string
@@ -61,8 +60,48 @@ async function extractRecipe(recipeId: string, url: string, platform: string) {
     // Promise for image persistence - will run in parallel with other work
     let imagePersistPromise: Promise<string | null> = Promise.resolve(null)
 
-    if (platform !== 'website') {
-      // Video platform extraction (YouTube, TikTok, Instagram)
+    if (platform === 'tiktok') {
+      // TikTok: Use TikWM API (more reliable than yt-dlp)
+      const infoStart = Date.now()
+      const tikTokInfo = await getTikTokInfo(url)
+      logger.extraction.info(`📋 TikTok info fetched via TikWM in ${Date.now() - infoStart}ms`)
+
+      description = tikTokInfo.description || ''
+      title = tikTokInfo.title || ''
+      sourceName = tikTokInfo.author || null
+      imageUrl = tikTokInfo.thumbnail || null
+
+      logger.extraction.debug(`📝 Title: ${title.slice(0, 50)}...`)
+      logger.extraction.debug(`📝 Description length: ${description.length} chars`)
+      logger.extraction.debug(`📷 Thumbnail URL: ${imageUrl ? 'found' : 'not found'}`)
+
+      // Start image download & persistence in parallel
+      if (imageUrl) {
+        jobStore.emitProgress(recipeId, 'downloading_image', 'Downloading recipe image...')
+        logger.extraction.info(`📷 Starting parallel image download: ${imageUrl.slice(0, 60)}...`)
+        imagePersistPromise = persistImage(imageUrl, recipeId).catch((err) => {
+          logger.extraction.warn(`⚠️ Image persistence failed (non-blocking): ${err}`)
+          return null
+        })
+      }
+
+      // TikTok often needs transcription since description may be sparse
+      if (contentIsSparse(description, '')) {
+        jobStore.emitProgress(recipeId, 'transcribing', 'Transcribing TikTok audio...')
+        try {
+          const { buffer } = await downloadTikTokAudio(url, tikTokInfo)
+          const transcriptResult = await transcribeAudio(buffer, 'audio.mp3')
+          transcript = transcriptResult?.text || ''
+          if (transcript) {
+            jobStore.emitProgress(recipeId, 'transcription_complete', `Transcribed ${transcript.length} chars`)
+            logger.extraction.info(`🎤 TikTok transcription complete: ${transcript.length} chars`)
+          }
+        } catch (err) {
+          logger.extraction.warn(`⚠️ TikTok transcription failed: ${err}`)
+        }
+      }
+    } else if (platform !== 'website') {
+      // Other video platforms (YouTube, Instagram) - use yt-dlp
       const infoStart = Date.now()
       const info = await getVideoInfo(url, platform)
       logger.extraction.info(`📋 Video info fetched in ${Date.now() - infoStart}ms`)
@@ -70,7 +109,7 @@ async function extractRecipe(recipeId: string, url: string, platform: string) {
       description = info.description || ''
       title = info.title || ''
       sourceName = info.uploader || info.channel || null
-      imageUrl = info.thumbnail || null // Get thumbnail from info, no extra call needed
+      imageUrl = info.thumbnail || null
 
       logger.extraction.debug(`📝 Title: ${title.slice(0, 50)}...`)
       logger.extraction.debug(`📝 Description length: ${description.length} chars`)
@@ -89,9 +128,8 @@ async function extractRecipe(recipeId: string, url: string, platform: string) {
       // Step 2: Extract captions + transcription in parallel where possible
       jobStore.emitProgress(recipeId, 'extracting_content', 'Extracting video content...')
 
-      // Determine if we need transcription
+      // Determine if we need transcription (Instagram often has sparse descriptions)
       const needsTranscription = platform === 'instagram'
-        || (platform === 'tiktok') // TikTok often has sparse descriptions
 
       // Run captions extraction and (if needed) transcription in parallel
       const contentExtractionStart = Date.now()
@@ -250,24 +288,25 @@ async function extractRecipe(recipeId: string, url: string, platform: string) {
 }
 
 /**
- * Get video info including captions metadata and thumbnail.
+ * Get video info using yt-dlp (for YouTube, Instagram).
+ * TikTok uses TikWM API instead (see tiktok.ts).
  */
 async function getVideoInfo(url: string, platform: string): Promise<VideoInfo> {
-  const options: string[] = ['--no-download']
+  const ytdlp = new YtDlp()
 
-  // Request subtitles/captions info
-  if (platform === 'youtube') {
-    options.push('--write-auto-subs', '--sub-lang', 'en')
+  const rawInfo = await ytdlp.getInfoAsync(url, { flatPlaylist: true })
+
+  if (!rawInfo) {
+    throw new Error(`Failed to fetch video info from ${platform}`)
   }
 
-  // Request comments for Instagram
-  if (platform === 'instagram') {
-    options.push('--write-comments', '--max-comments', '20')
+  // Handle array response (playlist) - take first item
+  const info = (Array.isArray(rawInfo) ? rawInfo[0] : rawInfo) as Record<string, unknown>
+
+  if (!info || typeof info !== 'object') {
+    throw new Error(`Failed to fetch video info from ${platform}`)
   }
 
-  const info = await ytdlp.getInfoAsync(url) as unknown as Record<string, unknown>
-
-  // Map the raw info to our VideoInfo interface, including thumbnail
   return {
     title: (info.title as string) || '',
     description: (info.description as string) || '',
@@ -455,24 +494,46 @@ async function transcribeVideo(info: VideoInfo): Promise<string | null> {
   }
 
   try {
-    // Find audio-only format
     const formats = info.formats || []
-    const audioFormat = formats.find(
+
+    // First try: audio-only format (best for bandwidth)
+    let audioFormat = formats.find(
       f => f.acodec !== 'none' && f.vcodec === 'none'
         && ['m4a', 'mp3', 'webm', 'ogg'].includes(f.ext)
     )
+
+    // Fallback: video with audio (for TikTok which has no audio-only)
+    // Pick smallest video file with audio
+    if (!audioFormat) {
+      const videoWithAudio = formats
+        .filter(f => f.acodec !== 'none' && f.acodec !== 'video only' && f.url)
+        .sort((a, b) => {
+          // Prefer smaller files (less bandwidth)
+          const sizeA = (a as Record<string, unknown>).filesize as number || Infinity
+          const sizeB = (b as Record<string, unknown>).filesize as number || Infinity
+          return sizeA - sizeB
+        })
+
+      if (videoWithAudio.length > 0) {
+        audioFormat = videoWithAudio[0]
+        logger.extraction.info(`📹 Using video format for audio: ${audioFormat.format_id} (no audio-only available)`)
+      }
+    }
 
     if (!audioFormat?.url) {
       logger.extraction.warn('⚠️ No suitable audio format found')
       return null
     }
 
+    logger.extraction.debug(`🎵 Audio format: ${audioFormat.format_id}, ext: ${audioFormat.ext}`)
+
     // Download audio
     const audioBuffer = await downloadAudio(audioFormat.url)
     if (!audioBuffer) return null
 
-    // Transcribe
-    const result = await transcribeAudio(audioBuffer, `audio.${audioFormat.ext}`)
+    // Transcribe - use mp4 extension for video formats
+    const ext = audioFormat.vcodec === 'none' ? audioFormat.ext : 'mp4'
+    const result = await transcribeAudio(audioBuffer, `audio.${ext}`)
     return result?.text || null
   } catch (error) {
     logger.extraction.error('❌ Video transcription failed:', error)
