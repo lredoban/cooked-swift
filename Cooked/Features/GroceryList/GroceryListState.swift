@@ -322,35 +322,6 @@ final class GroceryListState {
         }
     }
 
-    // MARK: - Share as Text
-
-    func shareListAsText() -> String {
-        guard let list = activeList else { return "" }
-
-        var text = "Grocery List\n"
-        text += "============\n\n"
-
-        // Group by category
-        let grouped = Dictionary(grouping: list.items) { $0.category }
-        let sortedCategories = grouped.keys.sorted { $0.sortOrder < $1.sortOrder }
-
-        for category in sortedCategories {
-            guard let items = grouped[category] else { continue }
-            text += "\(category.displayName)\n"
-
-            for item in items {
-                let check = item.isChecked ? "[x]" : "[ ]"
-                if let qty = item.quantity {
-                    text += "\(check) \(qty) \(item.text)\n"
-                } else {
-                    text += "\(check) \(item.text)\n"
-                }
-            }
-            text += "\n"
-        }
-
-        return text
-    }
 }
 
 // MARK: - IngredientCategory Extensions

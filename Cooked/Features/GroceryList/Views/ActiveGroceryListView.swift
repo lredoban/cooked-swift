@@ -4,7 +4,6 @@ struct ActiveGroceryListView: View {
     let list: GroceryList
     @Environment(GroceryListState.self) private var groceryState
     @State private var showDeleteConfirmation = false
-    @State private var showShareSheet = false
     @State private var showShareLinkSheet = false
 
     private var groupedItems: [(category: Ingredient.IngredientCategory, items: [GroceryItem])] {
@@ -56,16 +55,8 @@ struct ActiveGroceryListView: View {
                     Button {
                         showShareLinkSheet = true
                     } label: {
-                        Label("Share with Link", systemImage: "link")
+                        Label("Share", systemImage: "square.and.arrow.up")
                     }
-
-                    Button {
-                        showShareSheet = true
-                    } label: {
-                        Label("Share as Text", systemImage: "doc.text")
-                    }
-
-                    Divider()
 
                     Button(role: .destructive) {
                         showDeleteConfirmation = true
@@ -87,9 +78,6 @@ struct ActiveGroceryListView: View {
         } message: {
             Text("This action cannot be undone.")
         }
-        .sheet(isPresented: $showShareSheet) {
-            ShareSheet(items: [groceryState.shareListAsText()])
-        }
         .sheet(isPresented: $showShareLinkSheet) {
             ShareLinkSheet(list: list)
         }
@@ -103,6 +91,7 @@ struct ShareLinkSheet: View {
     @Environment(GroceryListState.self) private var groceryState
     @Environment(\.dismiss) private var dismiss
     @State private var copied = false
+    @State private var linkReady = false
 
     private var shareURL: URL? {
         guard let token = list.shareToken ?? groceryState.activeList?.shareToken else {
@@ -111,19 +100,49 @@ struct ShareLinkSheet: View {
         return AppConfig.backendURL.appendingPathComponent("list/\(token)")
     }
 
+    private var isLoading: Bool {
+        groceryState.isGeneratingShareLink || (shareURL == nil && !linkReady)
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                // Icon
-                Image(systemName: "link.circle.fill")
-                    .font(.system(size: 60))
-                    .foregroundStyle(.green)
-                    .padding(.top, 24)
+                Spacer()
+
+                // Animated icon that transforms from loading to link
+                ZStack {
+                    if isLoading {
+                        // Loading state with spinning animation
+                        Circle()
+                            .stroke(Color.green.opacity(0.3), lineWidth: 4)
+                            .frame(width: 80, height: 80)
+
+                        Circle()
+                            .trim(from: 0, to: 0.3)
+                            .stroke(Color.green, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                            .frame(width: 80, height: 80)
+                            .rotationEffect(.degrees(-90))
+                            .modifier(SpinningModifier())
+
+                        Image(systemName: "link")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.green)
+                    } else {
+                        // Ready state
+                        Image(systemName: "link.circle.fill")
+                            .font(.system(size: 80))
+                            .foregroundStyle(.green)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                }
+                .animation(.spring(duration: 0.4), value: isLoading)
+                .frame(height: 80)
 
                 // Title
-                Text("Share Grocery List")
+                Text(isLoading ? "Creating link..." : "Share Grocery List")
                     .font(.title2)
                     .fontWeight(.semibold)
+                    .animation(.easeInOut, value: isLoading)
 
                 // Description
                 Text("Anyone with this link can view and check off items in real-time.")
@@ -134,74 +153,74 @@ struct ShareLinkSheet: View {
 
                 Spacer()
 
+                // Link input area
                 if let url = shareURL {
-                    // Link display
                     VStack(spacing: 16) {
-                        Text(url.absoluteString)
-                            .font(.system(.body, design: .monospaced))
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color(.secondarySystemBackground))
-                            .cornerRadius(12)
-                            .padding(.horizontal)
-
-                        // Copy button
+                        // Copyable link field
                         Button {
                             UIPasteboard.general.string = url.absoluteString
                             copied = true
 
-                            // Reset after 2 seconds
                             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                                 copied = false
                             }
                         } label: {
-                            Label(copied ? "Copied!" : "Copy Link", systemImage: copied ? "checkmark" : "doc.on.doc")
-                                .frame(maxWidth: .infinity)
+                            HStack {
+                                Text(url.absoluteString)
+                                    .font(.system(.subheadline, design: .monospaced))
+                                    .foregroundStyle(.primary)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+
+                                Spacer()
+
+                                Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.doc")
+                                    .foregroundStyle(copied ? .green : .secondary)
+                                    .contentTransition(.symbolEffect(.replace))
+                            }
+                            .padding()
+                            .background(Color(.secondarySystemBackground))
+                            .cornerRadius(12)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.green)
+                        .buttonStyle(.plain)
                         .padding(.horizontal)
+                        .transition(.opacity.combined(with: .move(edge: .bottom)))
+
+                        // Feedback text
+                        if copied {
+                            Text("Copied to clipboard!")
+                                .font(.caption)
+                                .foregroundStyle(.green)
+                                .transition(.opacity)
+                        }
 
                         // Share button
                         ShareLink(item: url) {
                             Label("Share", systemImage: "square.and.arrow.up")
                                 .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.borderedProminent)
+                        .tint(.green)
                         .padding(.horizontal)
-                    }
 
-                    // Revoke link button
-                    Button(role: .destructive) {
-                        Task {
-                            await groceryState.revokeShareLink()
-                        }
-                    } label: {
-                        Text("Revoke Link")
-                            .font(.subheadline)
-                    }
-                    .padding(.top, 8)
-
-                } else {
-                    // Generate link
-                    VStack(spacing: 16) {
-                        if groceryState.isGeneratingShareLink {
-                            ProgressView()
-                                .padding()
-                        } else {
-                            Button {
-                                Task {
-                                    await groceryState.generateShareLink()
-                                }
-                            } label: {
-                                Label("Generate Share Link", systemImage: "link.badge.plus")
-                                    .frame(maxWidth: .infinity)
+                        // Revoke link button
+                        Button(role: .destructive) {
+                            Task {
+                                await groceryState.revokeShareLink()
+                                dismiss()
                             }
-                            .buttonStyle(.borderedProminent)
-                            .tint(.green)
-                            .padding(.horizontal)
+                        } label: {
+                            Text("Revoke Link")
+                                .font(.subheadline)
                         }
+                        .padding(.top, 8)
                     }
+                    .animation(.spring(duration: 0.4), value: shareURL != nil)
+                } else if !isLoading {
+                    // Fallback if link generation failed
+                    Text("Failed to create link. Please try again.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
@@ -216,6 +235,32 @@ struct ShareLinkSheet: View {
             }
         }
         .presentationDetents([.medium])
+        .task {
+            // Auto-generate link if not already present
+            if shareURL == nil {
+                await groceryState.generateShareLink()
+                withAnimation {
+                    linkReady = true
+                }
+            } else {
+                linkReady = true
+            }
+        }
+    }
+}
+
+// MARK: - Spinning Animation Modifier
+
+struct SpinningModifier: ViewModifier {
+    @State private var isSpinning = false
+
+    func body(content: Content) -> some View {
+        content
+            .rotationEffect(.degrees(isSpinning ? 360 : 0))
+            .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: isSpinning)
+            .onAppear {
+                isSpinning = true
+            }
     }
 }
 
@@ -308,18 +353,6 @@ struct GroceryItemRow: View {
         }
         return label
     }
-}
-
-// MARK: - Share Sheet
-
-struct ShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 #Preview {
