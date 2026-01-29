@@ -58,8 +58,6 @@ struct ActiveGroceryListView: View {
                         Label("Share", systemImage: "square.and.arrow.up")
                     }
 
-                    Divider()
-
                     Button(role: .destructive) {
                         showDeleteConfirmation = true
                     } label: {
