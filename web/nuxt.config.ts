@@ -18,6 +18,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     supabaseServiceKey: '',
+    openrouterApiKey: '', // OPENROUTER_API_KEY
+    groqApiKey: '', // GROQ_API_KEY
     public: {
       supabaseUrl: '',
       supabaseAnonKey: '',

@@ -1,7 +1,12 @@
 import { logger } from './logger'
 
 export interface ExtractionResult {
-  ingredients: { text: string; quantity?: string }[]
+  ingredients: {
+    text: string
+    quantity?: string
+    unit?: string
+    category?: 'produce' | 'meat' | 'seafood' | 'dairy' | 'pantry' | 'frozen' | 'bakery' | 'other'
+  }[]
   steps: string[]
   tags: string[]
 }
@@ -9,6 +14,8 @@ export interface ExtractionResult {
 export interface ProgressEvent {
   stage: string
   message: string
+  timestamp: number
+  elapsed?: number // ms since job started
 }
 
 export interface Job {
@@ -18,6 +25,8 @@ export interface Job {
   progress: ProgressEvent[]
   result: ExtractionResult | null
   error: string | null
+  startedAt: number
+  completedAt?: number
 }
 
 type JobListener = (event: string, data: unknown) => void
@@ -32,6 +41,7 @@ class JobStore {
   private listeners = new Map<string, Set<JobListener>>()
 
   create(recipeId: string, userId: string): Job {
+    const now = Date.now()
     logger.jobs.info(`📝 Creating job - recipeId: ${recipeId}`)
     const job: Job = {
       recipeId,
@@ -39,7 +49,8 @@ class JobStore {
       status: 'importing',
       progress: [],
       result: null,
-      error: null
+      error: null,
+      startedAt: now
     }
     this.jobs.set(recipeId, job)
     logger.jobs.debug(`✅ Job created - active: ${this.jobs.size}`)
@@ -59,8 +70,16 @@ class JobStore {
       return
     }
 
-    logger.jobs.debug(`📊 Progress - ${stage}: ${message}`)
-    const event: ProgressEvent = { stage, message }
+    const now = Date.now()
+    const elapsed = now - job.startedAt
+    logger.jobs.debug(`📊 Progress [${elapsed}ms] - ${stage}: ${message}`)
+
+    const event: ProgressEvent = {
+      stage,
+      message,
+      timestamp: now,
+      elapsed
+    }
     job.progress.push(event)
     this.notify(recipeId, 'progress', event)
   }
@@ -72,10 +91,19 @@ class JobStore {
       return
     }
 
-    logger.jobs.info(`🎉 Complete - ingredients: ${result.ingredients.length}, steps: ${result.steps.length}`)
+    const now = Date.now()
+    const totalTime = now - job.startedAt
+    logger.jobs.info(`🎉 Complete in ${totalTime}ms - ingredients: ${result.ingredients.length}, steps: ${result.steps.length}`)
+
     job.status = 'pending_review'
     job.result = result
-    this.notify(recipeId, 'complete', result)
+    job.completedAt = now
+
+    this.notify(recipeId, 'complete', {
+      ...result,
+      totalTime,
+      stageCount: job.progress.length
+    })
 
     // Clean up after 10 minutes
     setTimeout(() => this.cleanup(recipeId), 10 * 60 * 1000)
@@ -88,10 +116,19 @@ class JobStore {
       return
     }
 
-    logger.jobs.error(`❌ Failed - ${reason}`)
+    const now = Date.now()
+    const totalTime = now - job.startedAt
+    logger.jobs.error(`❌ Failed after ${totalTime}ms - ${reason}`)
+
     job.status = 'failed'
     job.error = reason
-    this.notify(recipeId, 'error', { reason })
+    job.completedAt = now
+
+    this.notify(recipeId, 'error', {
+      reason,
+      totalTime,
+      stageCount: job.progress.length
+    })
 
     setTimeout(() => this.cleanup(recipeId), 10 * 60 * 1000)
   }

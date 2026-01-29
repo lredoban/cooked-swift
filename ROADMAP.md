@@ -625,6 +625,11 @@ These tasks can be picked up anytime and don't block other phases.
 - **Recipe Extraction**
   - [x] yt-dlp extraction endpoints in Nuxt (`/api/extract`, `/api/recipes/import`, `/api/recipes/[id]/stream`)
   - [x] `/api/extract` and `/admin/extract` gated with `import.meta.dev` (dev-only)
+  - [x] TikTok: Uses TikWM API (tikwm.com) - more reliable than yt-dlp for TikTok
+    - [x] Page scraping fallback when TikWM returns empty description
+    - [x] Extracts video text overlays (`stickersOnItem`) which often contain recipe ingredients
+    - Future: Consider [heilkit/tt](https://github.com/heilkit/tt) to self-host TikTok extraction
+  - [x] LLM extraction improved to capture ALL ingredients from ALL sections
   - [ ] Production extraction solution (TBD)
 
 - **Website (Cloudflare Pages)**
