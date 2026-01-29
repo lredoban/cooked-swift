@@ -42,12 +42,18 @@ struct Ingredient: Codable, Identifiable, Sendable, Hashable {
     enum IngredientCategory: String, Codable, Sendable {
         /// Fresh fruits and vegetables
         case produce
-        /// Meat, poultry, and seafood
+        /// Meat and poultry (chicken, beef, pork, lamb)
         case meat
-        /// Dairy products and eggs
+        /// Fish, shrimp, shellfish
+        case seafood
+        /// Dairy products, eggs, and yogurt
         case dairy
-        /// Shelf-stable items (canned goods, spices, etc.)
+        /// Shelf-stable items (canned goods, spices, oils, flour, pasta, rice)
         case pantry
+        /// Frozen vegetables, fruits, ice cream
+        case frozen
+        /// Bread, tortillas, buns
+        case bakery
         /// Items that don't fit other categories
         case other
     }
