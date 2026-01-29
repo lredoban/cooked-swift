@@ -84,9 +84,7 @@ struct VariantAQuickWinView: View {
             // Sync indicator
             if phase == .shopping || phase == .complete {
                 HStack(spacing: 8) {
-                    Image(systemName: "arrow.triangle.2.circlepath")
-                        .foregroundStyle(.green)
-                        .symbolEffect(.rotate, isActive: phase == .shopping)
+                    SyncIcon(isAnimating: phase == .shopping)
                     Text("Syncing in real-time")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -113,7 +111,7 @@ struct VariantAQuickWinView: View {
             // CTA Button
             if showCTA {
                 Button(action: onContinue) {
-                    Text("Continue")
+                    Text("Let's get cooking!")
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
@@ -310,5 +308,29 @@ private struct GroceryListMockup: View {
             }
         }
         .frame(height: 180)
+    }
+}
+
+// MARK: - Sync Icon (iOS 17 compatible)
+
+private struct SyncIcon: View {
+    let isAnimating: Bool
+    @State private var rotation: Double = 0
+
+    var body: some View {
+        Image(systemName: "arrow.triangle.2.circlepath")
+            .foregroundStyle(.green)
+            .rotationEffect(.degrees(rotation))
+            .onChange(of: isAnimating, initial: true) { _, newValue in
+                if newValue {
+                    withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                        rotation = 360
+                    }
+                } else {
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        rotation = 0
+                    }
+                }
+            }
     }
 }
