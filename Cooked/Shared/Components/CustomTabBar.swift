@@ -4,6 +4,13 @@
 //
 //  Spatial Glass - Frosted glass tab bar with holographic accents
 //
+//  STYLE PHILOSOPHY:
+//  "The Culinary Operating System" — Spatial Glass transforms cooking into a cinematic,
+//  immersive experience. Inspired by visionOS and high-end car interfaces, this style
+//  uses deep blacks, frosted glass panels, and holographic orange gradients to create
+//  a premium, futuristic feel. Every element floats in space with ambient glows and
+//  soft reflections, making meal planning feel like piloting a spacecraft.
+//
 
 import SwiftUI
 
