@@ -15,29 +15,28 @@ struct ActiveGroceryListView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Progress Header
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("\(groceryState.checkedCount) of \(groceryState.totalCount) items")
-                            .font(.headline)
+            VStack(alignment: .leading, spacing: 0) {
+                // Progress Header - Bold Swiss style
+                SwissProgressBar(value: Double(groceryState.checkedCount), total: Double(groceryState.totalCount))
+                    .padding(.horizontal, 16)
+                    .padding(.top, 20)
+                    .padding(.bottom, 8)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Shopping progress: \(groceryState.checkedCount) of \(groceryState.totalCount) items checked, \(Int(groceryState.progress * 100)) percent complete")
 
-                        Spacer()
+                // Progress label
+                Text("\(groceryState.checkedCount) OF \(groceryState.totalCount) ITEMS")
+                    .font(.swissCaption(11))
+                    .fontWeight(.medium)
+                    .tracking(1)
+                    .foregroundStyle(BoldSwiss.black.opacity(0.5))
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 20)
 
-                        Text("\(Int(groceryState.progress * 100))%")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    ProgressView(value: groceryState.progress)
-                        .tint(.green)
-                }
-                .padding(.horizontal)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("Shopping progress: \(groceryState.checkedCount) of \(groceryState.totalCount) items checked, \(Int(groceryState.progress * 100)) percent complete")
+                SwissDivider()
 
                 // Items by Category
-                VStack(spacing: 16) {
+                VStack(spacing: 0) {
                     ForEach(groupedItems, id: \.category) { group in
                         CategorySection(
                             category: group.category,
@@ -45,10 +44,11 @@ struct ActiveGroceryListView: View {
                         )
                     }
                 }
-                .padding(.horizontal)
+                .padding(.top, 16)
             }
-            .padding(.top)
+            .padding(.bottom, 40)
         }
+        .background(BoldSwiss.white)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 SwiftUI.Menu {
@@ -65,6 +65,8 @@ struct ActiveGroceryListView: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(BoldSwiss.black)
                 }
             }
         }
@@ -109,29 +111,29 @@ struct ShareLinkSheet: View {
             VStack(spacing: 24) {
                 Spacer()
 
-                // Animated icon that transforms from loading to link
+                // Icon
                 ZStack {
                     if isLoading {
                         // Loading state with spinning animation
-                        Circle()
-                            .stroke(Color.green.opacity(0.3), lineWidth: 4)
+                        Rectangle()
+                            .stroke(BoldSwiss.black.opacity(0.3), lineWidth: 2)
                             .frame(width: 80, height: 80)
 
-                        Circle()
+                        Rectangle()
                             .trim(from: 0, to: 0.3)
-                            .stroke(Color.green, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                            .stroke(BoldSwiss.black, style: StrokeStyle(lineWidth: 2, lineCap: .square))
                             .frame(width: 80, height: 80)
                             .rotationEffect(.degrees(-90))
                             .modifier(SpinningModifier())
 
                         Image(systemName: "link")
-                            .font(.system(size: 32))
-                            .foregroundStyle(.green)
+                            .font(.system(size: 32, weight: .light))
+                            .foregroundStyle(BoldSwiss.black)
                     } else {
                         // Ready state
-                        Image(systemName: "link.circle.fill")
-                            .font(.system(size: 80))
-                            .foregroundStyle(.green)
+                        Image(systemName: "link")
+                            .font(.system(size: 64, weight: .ultraLight))
+                            .foregroundStyle(BoldSwiss.black)
                             .transition(.scale.combined(with: .opacity))
                     }
                 }
@@ -139,15 +141,16 @@ struct ShareLinkSheet: View {
                 .frame(height: 80)
 
                 // Title
-                Text(isLoading ? "Creating link..." : "Share Grocery List")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                Text(isLoading ? "CREATING LINK..." : "SHARE GROCERY LIST")
+                    .font(.swissHeader(20))
+                    .tracking(1)
+                    .foregroundStyle(BoldSwiss.black)
                     .animation(.easeInOut, value: isLoading)
 
                 // Description
                 Text("Anyone with this link can view and check off items in real-time.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.swissBody(14))
+                    .foregroundStyle(BoldSwiss.black.opacity(0.6))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 
@@ -167,41 +170,46 @@ struct ShareLinkSheet: View {
                         } label: {
                             HStack {
                                 Text(url.absoluteString)
-                                    .font(.system(.subheadline, design: .monospaced))
-                                    .foregroundStyle(.primary)
+                                    .font(.swissMono(12))
+                                    .foregroundStyle(BoldSwiss.black)
                                     .lineLimit(1)
                                     .truncationMode(.middle)
 
                                 Spacer()
 
-                                Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.doc")
-                                    .foregroundStyle(copied ? .green : .secondary)
+                                Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundStyle(copied ? BoldSwiss.black : BoldSwiss.black.opacity(0.5))
                                     .contentTransition(.symbolEffect(.replace))
                             }
-                            .padding()
-                            .background(Color(.secondarySystemBackground))
-                            .cornerRadius(12)
+                            .padding(16)
+                            .swissBorder()
                         }
                         .buttonStyle(.plain)
-                        .padding(.horizontal)
+                        .padding(.horizontal, 24)
                         .transition(.opacity.combined(with: .move(edge: .bottom)))
 
                         // Feedback text
                         if copied {
-                            Text("Copied to clipboard!")
-                                .font(.caption)
-                                .foregroundStyle(.green)
+                            Text("COPIED TO CLIPBOARD")
+                                .font(.swissCaption(11))
+                                .fontWeight(.medium)
+                                .tracking(1)
+                                .foregroundStyle(BoldSwiss.black)
                                 .transition(.opacity)
                         }
 
                         // Share button
                         ShareLink(item: url) {
-                            Label("Share", systemImage: "square.and.arrow.up")
-                                .frame(maxWidth: .infinity)
+                            HStack(spacing: 12) {
+                                Image(systemName: "square.and.arrow.up")
+                                    .font(.system(size: 14, weight: .bold))
+                                Text("SHARE")
+                            }
+                            .swissPrimaryButton()
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.green)
-                        .padding(.horizontal)
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, 24)
 
                         // Revoke link button
                         Button(role: .destructive) {
@@ -210,8 +218,11 @@ struct ShareLinkSheet: View {
                                 dismiss()
                             }
                         } label: {
-                            Text("Revoke Link")
-                                .font(.subheadline)
+                            Text("REVOKE LINK")
+                                .font(.swissCaption(12))
+                                .fontWeight(.medium)
+                                .tracking(1)
+                                .foregroundStyle(BoldSwiss.accent)
                         }
                         .padding(.top, 8)
                     }
@@ -219,18 +230,23 @@ struct ShareLinkSheet: View {
                 } else if !isLoading {
                     // Fallback if link generation failed
                     Text("Failed to create link. Please try again.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.swissBody(14))
+                        .foregroundStyle(BoldSwiss.black.opacity(0.5))
                 }
 
                 Spacer()
             }
+            .background(BoldSwiss.white)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
+                    Button("DONE") {
                         dismiss()
                     }
+                    .font(.swissCaption(12))
+                    .fontWeight(.bold)
+                    .tracking(1)
+                    .foregroundStyle(BoldSwiss.black)
                 }
             }
         }
@@ -273,33 +289,36 @@ struct CategorySection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Category Header
+        VStack(alignment: .leading, spacing: 0) {
+            // Category Header - WHITE TEXT ON BLACK BAR (inverted)
             HStack(spacing: 8) {
                 Image(systemName: category.iconName)
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 12, weight: .bold))
                     .accessibilityHidden(true)
-                Text(category.displayName)
-                    .font(.headline)
+                Text(category.displayName.uppercased())
+                    .font(.swissCaption(12))
+                    .fontWeight(.bold)
+                    .tracking(1)
             }
+            .swissSectionHeader()
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(category.displayName) section, \(checkedCount) of \(items.count) items checked")
             .accessibilityAddTraits(.isHeader)
 
             // Items
             VStack(spacing: 0) {
-                ForEach(items) { item in
+                ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                     GroceryItemRow(item: item)
 
-                    if item.id != items.last?.id {
-                        Divider()
-                            .padding(.leading, 44)
+                    if index < items.count - 1 {
+                        SwissDivider()
                     }
                 }
             }
-            .background(Color(.secondarySystemBackground))
-            .cornerRadius(12)
         }
+        .swissBorder()
+        .padding(.horizontal, 16)
+        .padding(.bottom, 16)
     }
 }
 
@@ -313,27 +332,32 @@ struct GroceryItemRow: View {
                 await groceryState.toggleItemChecked(item)
             }
         } label: {
-            HStack(spacing: 12) {
-                Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(item.isChecked ? .green : .secondary)
+            HStack(spacing: 16) {
+                // Square checkbox
+                SwissCheckbox(isChecked: item.isChecked) {
+                    // Action handled by parent button
+                }
+                .allowsHitTesting(false)
 
+                // Item info
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.text)
-                        .font(.body)
-                        .strikethrough(item.isChecked)
-                        .foregroundStyle(item.isChecked ? .secondary : .primary)
+                    Text(item.text.uppercased())
+                        .font(.swissBody(14))
+                        .fontWeight(.medium)
+                        .foregroundStyle(item.isChecked ? BoldSwiss.black.opacity(BoldSwiss.dimmedOpacity) : BoldSwiss.black)
 
                     if let qty = item.quantity {
-                        Text(qty)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        Text(qty.uppercased())
+                            .font(.swissCaption(12))
+                            .foregroundStyle(item.isChecked ? BoldSwiss.black.opacity(0.2) : BoldSwiss.black.opacity(0.5))
                     }
                 }
 
                 Spacer()
             }
-            .padding()
+            .padding(16)
+            .background(BoldSwiss.white)
+            .opacity(item.isChecked ? 0.6 : 1.0)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -374,7 +398,7 @@ struct GroceryItemRow: View {
                 shareToken: nil
             )
         )
-        .navigationTitle("Grocery List")
+        .navigationTitle("GROCERY LIST")
     }
     .environment(GroceryListState())
 }

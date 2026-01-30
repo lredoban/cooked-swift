@@ -4,53 +4,51 @@ struct RecipeCard: View {
     let recipe: Recipe
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ZStack(alignment: .topTrailing) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Image container with status badge
+            ZStack(alignment: .topLeading) {
                 AsyncImageView(url: recipe.imageUrl)
-                    .frame(height: 120)
+                    .frame(height: 140)
                     .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
+                    .background(BoldSwiss.black.opacity(0.05))
                     .clipped()
-                    .cornerRadius(12)
+                    .swissClip()
                     .accessibilityHidden(true)
 
+                // Status badge in top-left corner
                 if recipe.importStatus == .importing {
-                    importBadge(text: "Importing...", icon: "arrow.down.circle.fill")
+                    SwissStatusBadge(text: "IMPORTING")
                 } else if recipe.importStatus == .pendingReview {
-                    importBadge(text: "Ready", icon: "checkmark.circle.fill")
+                    SwissStatusBadge(text: "READY")
                 }
             }
 
-            Text(recipe.title)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
+            // Content area
+            VStack(alignment: .leading, spacing: 4) {
+                Text(recipe.title.uppercased())
+                    .font(.swissCaption(11))
+                    .fontWeight(.bold)
+                    .tracking(0.5)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .foregroundStyle(BoldSwiss.black)
 
-            if let sourceName = recipe.sourceName {
-                Text(sourceName)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                if let sourceName = recipe.sourceName {
+                    Text(sourceName.uppercased())
+                        .font(.swissCaption(10))
+                        .tracking(0.5)
+                        .foregroundStyle(BoldSwiss.black.opacity(0.5))
+                        .lineLimit(1)
+                }
             }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(BoldSwiss.white)
         }
+        .swissBorder()
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint("Double tap to view recipe details")
-    }
-
-    private func importBadge(text: String, icon: String) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-            Text(text)
-        }
-        .font(.caption2)
-        .fontWeight(.medium)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(.ultraThinMaterial)
-        .cornerRadius(8)
-        .padding(6)
     }
 
     private var accessibilityLabel: String {
@@ -66,11 +64,20 @@ struct RecipeCard: View {
 }
 
 #Preview {
-    RecipeCard(recipe: Recipe(
-        userId: UUID(),
-        title: "Delicious Pasta Recipe with Tomato Sauce",
-        sourceName: "TikTok"
-    ))
-    .frame(width: 160)
+    HStack(spacing: 1) {
+        RecipeCard(recipe: Recipe(
+            userId: UUID(),
+            title: "Delicious Pasta Recipe with Tomato Sauce",
+            sourceName: "TikTok"
+        ))
+
+        RecipeCard(recipe: Recipe(
+            userId: UUID(),
+            title: "Quick Salad",
+            sourceName: "Instagram",
+            importStatus: .pendingReview
+        ))
+    }
     .padding()
+    .background(BoldSwiss.white)
 }
