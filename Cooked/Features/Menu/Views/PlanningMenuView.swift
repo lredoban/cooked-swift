@@ -5,61 +5,71 @@ struct PlanningMenuView: View {
     @Environment(MenuState.self) private var menuState
 
     private let columns = [
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
+        GridItem(.flexible(), spacing: 1),
+        GridItem(.flexible(), spacing: 1)
     ]
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                // Header
+            VStack(alignment: .leading, spacing: 0) {
+                // Header bar
                 HStack {
-                    Text("\(menu.items.count) recipe\(menu.items.count == 1 ? "" : "s")")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text("\(menu.items.count) RECIPE\(menu.items.count == 1 ? "" : "S")")
+                        .font(.swissCaption(11))
+                        .fontWeight(.medium)
+                        .tracking(1)
+                        .foregroundStyle(BoldSwiss.black.opacity(0.6))
 
                     Spacer()
 
                     Button {
                         menuState.openRecipePicker()
                     } label: {
-                        Label("Add", systemImage: "plus")
-                            .font(.subheadline)
+                        HStack(spacing: 6) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 12, weight: .bold))
+                            Text("ADD")
+                                .font(.swissCaption(11))
+                                .fontWeight(.bold)
+                                .tracking(1)
+                        }
+                        .foregroundStyle(BoldSwiss.black)
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+
+                SwissDivider()
 
                 // Recipe Grid
-                LazyVGrid(columns: columns, spacing: 16) {
+                LazyVGrid(columns: columns, spacing: 1) {
                     ForEach(menu.items) { item in
                         MenuRecipeCard(item: item)
                     }
                 }
-                .padding(.horizontal)
+                .swissBorder()
+                .padding(.top, 16)
+                .padding(.horizontal, 16)
             }
-            .padding(.top)
         }
+        .background(BoldSwiss.white)
         .safeAreaInset(edge: .bottom) {
             // "Start Cooking" button
             if !menu.items.isEmpty {
                 VStack(spacing: 0) {
-                    Divider()
+                    SwissDivider()
                     Button {
                         Task {
                             await menuState.startCooking()
                         }
                     } label: {
-                        Text("Ready to Cook")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
+                        Text("READY TO COOK")
+                            .swissPrimaryButton()
                     }
-                    .padding()
+                    .buttonStyle(.plain)
+                    .padding(16)
                 }
-                .background(.ultraThinMaterial)
+                .background(BoldSwiss.white)
             }
         }
     }
@@ -88,7 +98,7 @@ struct PlanningMenuView: View {
                 ]
             )
         )
-        .navigationTitle("Menu")
+        .navigationTitle("MENU")
     }
     .environment(MenuState())
 }

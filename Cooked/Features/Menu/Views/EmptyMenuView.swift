@@ -5,51 +5,74 @@ struct EmptyMenuView: View {
     @Environment(SubscriptionState.self) private var subscriptionState
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
             Spacer()
 
-            Image(systemName: "fork.knife")
-                .font(.system(size: 60))
-                .foregroundStyle(.orange)
-                .accessibilityHidden(true)
+            // Poster-style layout
+            VStack(alignment: .leading, spacing: 32) {
+                // Large graphic icon - fork/knife with thick black lines
+                Image(systemName: "fork.knife")
+                    .font(.system(size: 100, weight: .ultraLight))
+                    .foregroundStyle(BoldSwiss.black)
+                    .accessibilityHidden(true)
 
-            Text("What do you want to cook?")
-                .font(.title2)
-                .fontWeight(.semibold)
+                // Headline - MASSIVE font, flush left
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("WHAT DO YOU")
+                        .font(.swissDisplay(42))
+                        .foregroundStyle(BoldSwiss.black)
+
+                    Text("WANT TO COOK?")
+                        .font(.swissDisplay(42))
+                        .foregroundStyle(BoldSwiss.black)
+                }
                 .accessibilityAddTraits(.isHeader)
 
-            Text("Build your menu for the week")
-                .foregroundStyle(.secondary)
-
-            Button {
-                Task {
-                    await menuState.createMenu()
-                    menuState.openRecipePicker()
-                }
-            } label: {
-                Label("Add Recipes", systemImage: "plus")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+                // Subtext - small, monospaced
+                Text("Build your menu for the week")
+                    .font(.swissMono(14))
+                    .foregroundStyle(BoldSwiss.black.opacity(0.5))
             }
-            .padding(.horizontal, 40)
-            .accessibilityLabel("Add recipes to menu")
-            .accessibilityHint("Opens recipe picker to select recipes for your weekly menu")
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 24)
 
             Spacer()
 
-            Button("View past menus") {
-                menuState.openHistory(historyLimit: subscriptionState.menuHistoryLimit())
+            // Bottom section
+            VStack(spacing: 16) {
+                // CTA button - full-width, black background, white text
+                Button {
+                    Task {
+                        await menuState.createMenu()
+                        menuState.openRecipePicker()
+                    }
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 16, weight: .bold))
+                        Text("ADD RECIPES")
+                    }
+                    .swissPrimaryButton()
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 24)
+                .accessibilityLabel("Add recipes to menu")
+                .accessibilityHint("Opens recipe picker to select recipes for your weekly menu")
+
+                // History link
+                Button("VIEW PAST MENUS") {
+                    menuState.openHistory(historyLimit: subscriptionState.menuHistoryLimit())
+                }
+                .font(.swissCaption(12))
+                .fontWeight(.medium)
+                .tracking(1)
+                .foregroundStyle(BoldSwiss.black.opacity(0.5))
+                .padding(.bottom, 24)
+                .accessibilityLabel("View past menus")
+                .accessibilityHint("Shows your previously cooked menus")
             }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .padding(.bottom, 20)
-            .accessibilityLabel("View past menus")
-            .accessibilityHint("Shows your previously cooked menus")
         }
+        .background(BoldSwiss.white)
     }
 }
 

@@ -4,8 +4,8 @@ struct RecipesView: View {
     @Environment(RecipeState.self) private var recipeState
 
     private let columns = [
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
+        GridItem(.flexible(), spacing: 1),
+        GridItem(.flexible(), spacing: 1)
     ]
 
     var body: some View {
@@ -14,23 +14,27 @@ struct RecipesView: View {
         NavigationStack {
             Group {
                 if recipeState.isLoading && recipeState.recipes.isEmpty {
-                    LoadingView(message: "Loading recipes...")
+                    LoadingView(message: "LOADING RECIPES...")
                 } else if recipeState.isEmpty {
                     emptyStateView
                 } else {
                     recipeGridView
                 }
             }
-            .navigationTitle("Recipes")
+            .background(BoldSwiss.white)
+            .navigationTitle("RECIPES")
+            .navigationBarTitleDisplayMode(.large)
             .searchable(text: $state.searchText, prompt: "Search recipes")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: 12) {
                         SortPicker(selection: $state.sortOption)
                         Button {
                             recipeState.startImport()
                         } label: {
                             Image(systemName: "plus")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(BoldSwiss.black)
                         }
                     }
                 }
@@ -48,28 +52,35 @@ struct RecipesView: View {
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 24) {
             Spacer()
 
-            Image(systemName: "book.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(.secondary)
+            // Large graphic icon - fork/knife with thick black lines
+            Image(systemName: "fork.knife")
+                .font(.system(size: 80, weight: .ultraLight))
+                .foregroundStyle(BoldSwiss.black)
+                .accessibilityHidden(true)
 
-            Text("No Recipes Yet")
-                .font(.title)
+            VStack(spacing: 8) {
+                Text("NO RECIPES YET")
+                    .font(.swissHeader(24))
+                    .swissUppercase()
+                    .foregroundStyle(BoldSwiss.black)
 
-            Text("Import your first recipe to get started")
-                .foregroundStyle(.secondary)
+                Text("Import your first recipe to get started")
+                    .font(.swissMono(14))
+                    .foregroundStyle(BoldSwiss.black.opacity(0.6))
+            }
 
             Button {
                 recipeState.startImport()
             } label: {
-                Label("Import Recipe", systemImage: "plus")
-                    .font(.headline)
+                Text("IMPORT RECIPE")
+                    .swissPrimaryButton()
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
-            .padding(.top, 8)
+            .buttonStyle(.plain)
+            .padding(.horizontal, 40)
+            .padding(.top, 16)
 
             Spacer()
         }
@@ -77,7 +88,7 @@ struct RecipesView: View {
 
     private var recipeGridView: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 0) {
                 // Tag filter bar
                 if !recipeState.allTags.isEmpty {
                     TagFilterBar(
@@ -85,28 +96,41 @@ struct RecipesView: View {
                         selectedTag: recipeState.selectedTag,
                         onTagTap: { recipeState.toggleTag($0) }
                     )
+                    .padding(.vertical, 12)
+
+                    SwissDivider()
                 }
 
-                // Results count
+                // Results count bar
                 HStack {
-                    Text(resultsText)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text(resultsText.uppercased())
+                        .font(.swissCaption(11))
+                        .fontWeight(.medium)
+                        .tracking(1)
+                        .foregroundStyle(BoldSwiss.black.opacity(0.6))
+
+                    Spacer()
 
                     if hasActiveFilters {
-                        Button("Clear") {
+                        Button("CLEAR") {
                             recipeState.clearFilters()
                         }
-                        .font(.subheadline)
+                        .font(.swissCaption(11))
+                        .fontWeight(.bold)
+                        .tracking(1)
+                        .foregroundStyle(BoldSwiss.black)
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+
+                SwissDivider()
 
                 // Recipe grid or no results
                 if recipeState.filteredRecipes.isEmpty {
                     noResultsView
                 } else {
-                    LazyVGrid(columns: columns, spacing: 16) {
+                    LazyVGrid(columns: columns, spacing: 1) {
                         ForEach(recipeState.filteredRecipes) { recipe in
                             if recipe.importStatus == .pendingReview {
                                 Button {
@@ -128,10 +152,9 @@ struct RecipesView: View {
                             }
                         }
                     }
-                    .padding(.horizontal)
+                    .swissBorder()
                 }
             }
-            .padding(.top)
         }
         .refreshable {
             await recipeState.loadRecipes()
@@ -139,26 +162,34 @@ struct RecipesView: View {
     }
 
     private var noResultsView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 40))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 48, weight: .ultraLight))
+                .foregroundStyle(BoldSwiss.black)
 
-            Text("No recipes found")
-                .font(.headline)
+            Text("NO RECIPES FOUND")
+                .font(.swissHeader(18))
+                .swissUppercase()
+                .foregroundStyle(BoldSwiss.black)
 
             Text("Try adjusting your search or filters")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.swissMono(12))
+                .foregroundStyle(BoldSwiss.black.opacity(0.6))
 
-            Button("Clear Filters") {
+            Button("CLEAR FILTERS") {
                 recipeState.clearFilters()
             }
-            .buttonStyle(.bordered)
-            .padding(.top, 4)
+            .font(.swissCaption(12))
+            .fontWeight(.bold)
+            .tracking(1)
+            .foregroundStyle(BoldSwiss.black)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .swissBorder()
+            .padding(.top, 8)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 60)
+        .padding(.vertical, 80)
     }
 
     private var hasActiveFilters: Bool {

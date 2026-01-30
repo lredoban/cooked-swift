@@ -8,50 +8,61 @@ struct ToCookMenuView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Progress Header
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("\(menu.cookedCount) of \(menu.totalCount) cooked")
-                            .font(.headline)
+            VStack(alignment: .leading, spacing: 0) {
+                // Progress Header - Bold Swiss style
+                SwissProgressBar(value: Double(menu.cookedCount), total: Double(menu.totalCount))
+                    .padding(.horizontal, 16)
+                    .padding(.top, 20)
+                    .padding(.bottom, 8)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Cooking progress: \(menu.cookedCount) of \(menu.totalCount) recipes cooked, \(Int(menu.progress * 100)) percent complete")
 
-                        Spacer()
+                // Progress label
+                Text("\(menu.cookedCount) OF \(menu.totalCount) COOKED")
+                    .font(.swissCaption(11))
+                    .fontWeight(.medium)
+                    .tracking(1)
+                    .foregroundStyle(BoldSwiss.black.opacity(0.5))
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 20)
 
-                        Text("\(Int(menu.progress * 100))%")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    ProgressView(value: menu.progress)
-                        .tint(.orange)
-                }
-                .padding(.horizontal)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("Cooking progress: \(menu.cookedCount) of \(menu.totalCount) recipes cooked, \(Int(menu.progress * 100)) percent complete")
+                SwissDivider()
 
                 // Generate Grocery List Button
                 Button {
                     groceryState.prepareListGeneration(from: menu)
                 } label: {
-                    Label("Generate Grocery List", systemImage: "checklist")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
+                    HStack(spacing: 12) {
+                        Image(systemName: "checklist")
+                            .font(.system(size: 14, weight: .bold))
+                        Text("GENERATE GROCERY LIST")
+                    }
+                    .swissSecondaryButton()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
-                .padding(.horizontal)
+                .buttonStyle(.plain)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 20)
                 .accessibilityHint("Creates a shopping list from your menu recipes")
 
+                SwissDivider()
+
                 // Recipe List (as checklist)
-                VStack(spacing: 12) {
-                    ForEach(menu.items) { item in
+                VStack(spacing: 0) {
+                    ForEach(Array(menu.items.enumerated()), id: \.element.id) { index, item in
                         ToCookRecipeRow(item: item)
+
+                        if index < menu.items.count - 1 {
+                            SwissDivider()
+                        }
                     }
                 }
-                .padding(.horizontal)
+                .swissBorder()
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
             }
-            .padding(.top)
+            .padding(.bottom, 40)
         }
+        .background(BoldSwiss.white)
         .sheet(isPresented: Binding(
             get: { groceryState.isShowingGenerateSheet },
             set: { groceryState.isShowingGenerateSheet = $0 }
@@ -85,6 +96,8 @@ struct ToCookMenuView: View {
             }
         } label: {
             Image(systemName: "ellipsis.circle")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(BoldSwiss.black)
         }
     }
 }
@@ -94,8 +107,9 @@ struct ToCookRecipeRow: View {
     @Environment(MenuState.self) private var menuState
 
     var body: some View {
-        HStack(spacing: 12) {
-            Button {
+        HStack(spacing: 16) {
+            // Square checkbox
+            SwissCheckbox(isChecked: item.isCooked) {
                 Task {
                     if item.isCooked {
                         await menuState.unmarkRecipeCooked(item)
@@ -103,38 +117,38 @@ struct ToCookRecipeRow: View {
                         await menuState.markRecipeCooked(item)
                     }
                 }
-            } label: {
-                Image(systemName: item.isCooked ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundStyle(item.isCooked ? .green : .secondary)
             }
             .accessibilityLabel(item.isCooked ? "Mark \(item.recipe.title) as not cooked" : "Mark \(item.recipe.title) as cooked")
 
+            // Recipe image - square, no border radius
             AsyncImageView(url: item.recipe.imageUrl)
-                .frame(width: 60, height: 60)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(8)
+                .frame(width: 56, height: 56)
+                .background(BoldSwiss.black.opacity(0.05))
+                .swissClip()
                 .accessibilityHidden(true)
 
+            // Recipe info
             VStack(alignment: .leading, spacing: 4) {
-                Text(item.recipe.title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .strikethrough(item.isCooked)
-                    .foregroundStyle(item.isCooked ? .secondary : .primary)
+                Text(item.recipe.title.uppercased())
+                    .font(.swissCaption(12))
+                    .fontWeight(.bold)
+                    .tracking(0.5)
+                    .foregroundStyle(item.isCooked ? BoldSwiss.black.opacity(BoldSwiss.dimmedOpacity) : BoldSwiss.black)
+                    .lineLimit(2)
 
                 if let sourceName = item.recipe.sourceName {
-                    Text(sourceName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(sourceName.uppercased())
+                        .font(.swissCaption(10))
+                        .tracking(0.5)
+                        .foregroundStyle(BoldSwiss.black.opacity(item.isCooked ? 0.2 : 0.5))
                 }
             }
 
             Spacer()
         }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
+        .padding(16)
+        .background(BoldSwiss.white)
+        .opacity(item.isCooked ? 0.6 : 1.0)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(item.recipe.title), \(item.isCooked ? "cooked" : "not yet cooked")")
     }
@@ -168,7 +182,8 @@ struct ToCookRecipeRow: View {
                 ]
             )
         )
-        .navigationTitle("Menu")
+        .navigationTitle("MENU")
     }
     .environment(MenuState())
+    .environment(GroceryListState())
 }

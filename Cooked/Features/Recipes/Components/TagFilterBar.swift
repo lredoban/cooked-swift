@@ -18,19 +18,21 @@ struct TagFilterBar: View {
                         )
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 16)
             }
         }
     }
 }
 
 #Preview {
-    VStack {
+    VStack(spacing: 16) {
         TagFilterBar(
             tags: ["dinner", "quick", "vegetarian", "pasta", "chicken", "breakfast"],
             selectedTag: "quick",
             onTagTap: { _ in }
         )
+
+        SwissDivider()
 
         TagFilterBar(
             tags: ["dinner", "quick", "vegetarian"],
@@ -38,4 +40,5 @@ struct TagFilterBar: View {
             onTagTap: { _ in }
         )
     }
+    .background(BoldSwiss.white)
 }
