@@ -5,32 +5,37 @@ struct PlanningMenuView: View {
     @Environment(MenuState.self) private var menuState
 
     private let columns = [
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
+        GridItem(.flexible(), spacing: ElectricUI.gridSpacing),
+        GridItem(.flexible(), spacing: ElectricUI.gridSpacing)
     ]
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: ElectricUI.gridSpacing) {
                 // Header
                 HStack {
                     Text("\(menu.items.count) recipe\(menu.items.count == 1 ? "" : "s")")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.electricCaption)
+                        .foregroundColor(.graphite)
 
                     Spacer()
 
                     Button {
                         menuState.openRecipePicker()
                     } label: {
-                        Label("Add", systemImage: "plus")
-                            .font(.subheadline)
+                        HStack(spacing: 4) {
+                            Image(systemName: "plus")
+                            Text("Add")
+                        }
+                        .font(.electricCaption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.hyperOrange)
                     }
                 }
                 .padding(.horizontal)
 
                 // Recipe Grid
-                LazyVGrid(columns: columns, spacing: 16) {
+                LazyVGrid(columns: columns, spacing: ElectricUI.gridSpacing) {
                     ForEach(menu.items) { item in
                         MenuRecipeCard(item: item)
                     }
@@ -39,27 +44,26 @@ struct PlanningMenuView: View {
             }
             .padding(.top)
         }
+        .warmConcreteBackground()
         .safeAreaInset(edge: .bottom) {
             // "Start Cooking" button
             if !menu.items.isEmpty {
                 VStack(spacing: 0) {
-                    Divider()
                     Button {
                         Task {
                             await menuState.startCooking()
                         }
                     } label: {
                         Text("Ready to Cook")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
+                            .electricPrimaryButton()
                     }
                     .padding()
                 }
-                .background(.ultraThinMaterial)
+                .background(
+                    Color.surfaceWhite
+                        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: -4)
+                        .ignoresSafeArea()
+                )
             }
         }
     }
