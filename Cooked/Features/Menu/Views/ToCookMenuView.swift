@@ -52,6 +52,7 @@ struct ToCookMenuView: View {
             .padding(.top)
         }
         .background(Color.vintageCream)
+        .tabBarPadding()
         .sheet(isPresented: Binding(
             get: { groceryState.isShowingGenerateSheet },
             set: { groceryState.isShowingGenerateSheet = $0 }

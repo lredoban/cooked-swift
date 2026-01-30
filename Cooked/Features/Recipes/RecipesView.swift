@@ -77,6 +77,7 @@ struct RecipesView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.vintageCream)
+        .tabBarPadding()
     }
 
     private var recipeGridView: some View {
@@ -139,6 +140,7 @@ struct RecipesView: View {
             .padding(.top)
         }
         .background(Color.vintageCream)
+        .tabBarPadding()
         .refreshable {
             await recipeState.loadRecipes()
         }

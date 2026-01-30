@@ -31,6 +31,7 @@ struct EmptyGroceryListView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.vintageCream)
+        .tabBarPadding()
     }
 }
 

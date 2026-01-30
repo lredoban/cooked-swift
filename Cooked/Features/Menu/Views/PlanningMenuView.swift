@@ -42,9 +42,9 @@ struct PlanningMenuView: View {
         }
         .background(Color.vintageCream)
         .safeAreaInset(edge: .bottom) {
-            // "Start Cooking" button
-            if !menu.items.isEmpty {
-                VStack(spacing: 0) {
+            // "Start Cooking" button + tab bar spacing
+            VStack(spacing: 0) {
+                if !menu.items.isEmpty {
                     Rectangle()
                         .fill(Color.vintageMutedCocoa.opacity(0.2))
                         .frame(height: 1)
@@ -59,8 +59,10 @@ struct PlanningMenuView: View {
                     .buttonStyle(.vintage)
                     .padding()
                 }
-                .background(Color.vintageWhite)
+                // Space for floating tab bar
+                Color.clear.frame(height: 90)
             }
+            .background(!menu.items.isEmpty ? Color.vintageWhite : Color.clear)
         }
     }
 }

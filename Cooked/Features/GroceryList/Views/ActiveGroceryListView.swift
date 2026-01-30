@@ -51,6 +51,7 @@ struct ActiveGroceryListView: View {
             .padding(.top)
         }
         .background(Color.vintageCream)
+        .tabBarPadding()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 SwiftUI.Menu {

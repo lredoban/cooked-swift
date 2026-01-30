@@ -50,6 +50,7 @@ struct EmptyMenuView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.vintageCream)
+        .tabBarPadding()
     }
 }
 

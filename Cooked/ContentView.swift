@@ -10,26 +10,29 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedTab: AppTab = .menu  // Menu is default
 
+    // Tab bar height for content padding
+    private let tabBarHeight: CGFloat = 90
+
     var body: some View {
-        TabView(selection: $selectedTab) {
-            RecipesView()
-                .tabItem {
-                    Label(AppTab.recipes.title, systemImage: AppTab.recipes.icon)
+        ZStack(alignment: .bottom) {
+            // Main content based on selected tab
+            Group {
+                switch selectedTab {
+                case .recipes:
+                    RecipesView()
+                case .menu:
+                    MenuView()
+                case .list:
+                    GroceryListView(selectedTab: $selectedTab)
                 }
-                .tag(AppTab.recipes)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            MenuView()
-                .tabItem {
-                    Label(AppTab.menu.title, systemImage: AppTab.menu.icon)
-                }
-                .tag(AppTab.menu)
-
-            GroceryListView(selectedTab: $selectedTab)
-                .tabItem {
-                    Label(AppTab.list.title, systemImage: AppTab.list.icon)
-                }
-                .tag(AppTab.list)
+            // Custom floating tab bar
+            CustomTabBar(selectedTab: $selectedTab)
         }
+        .ignoresSafeArea(.keyboard)
+        .environment(\.customTabBarHeight, tabBarHeight)
     }
 }
 
