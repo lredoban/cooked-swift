@@ -4,6 +4,13 @@
 //
 //  The Dopamine Scrapbook - Neon glowing tab bar with frosted glass
 //
+//  STYLE PHILOSOPHY:
+//  "Chaotic Maximalism" — The Dopamine Scrapbook is unapologetically loud and expressive.
+//  Inspired by Y2K aesthetics, rave culture, and anti-design movements, this dark-mode-only
+//  style uses neon acid greens, hyper-pinks, and glowing effects to create visual excitement.
+//  It's for users who see cooking as creative expression—messy, personal, and bursting with
+//  energy. Every glow and blur is intentional chaos that sparks joy.
+//
 
 import SwiftUI
 
