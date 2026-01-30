@@ -10,16 +10,18 @@ struct EmptyMenuView: View {
 
             Image(systemName: "fork.knife")
                 .font(.system(size: 60))
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.vintageTangerine)
                 .accessibilityHidden(true)
 
-            Text("What do you want to cook?")
-                .font(.title2)
-                .fontWeight(.semibold)
+            Text("WHAT DO YOU WANT TO COOK?")
+                .font(.vintageHeadline)
+                .foregroundColor(.vintageCoffee)
+                .multilineTextAlignment(.center)
                 .accessibilityAddTraits(.isHeader)
 
             Text("Build your menu for the week")
-                .foregroundStyle(.secondary)
+                .font(.vintageBody)
+                .foregroundStyle(Color.vintageMutedCocoa)
 
             Button {
                 Task {
@@ -28,13 +30,9 @@ struct EmptyMenuView: View {
                 }
             } label: {
                 Label("Add Recipes", systemImage: "plus")
-                    .font(.headline)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
             }
+            .buttonStyle(.vintage)
             .padding(.horizontal, 40)
             .accessibilityLabel("Add recipes to menu")
             .accessibilityHint("Opens recipe picker to select recipes for your weekly menu")
@@ -44,12 +42,15 @@ struct EmptyMenuView: View {
             Button("View past menus") {
                 menuState.openHistory(historyLimit: subscriptionState.menuHistoryLimit())
             }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
+            .font(.vintageCaption)
+            .foregroundStyle(Color.vintageMutedCocoa)
             .padding(.bottom, 20)
             .accessibilityLabel("View past menus")
             .accessibilityHint("Shows your previously cooked menus")
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.vintageCream)
+        .tabBarPadding()
     }
 }
 

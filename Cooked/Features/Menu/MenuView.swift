@@ -26,6 +26,7 @@ struct MenuView: View {
                     errorView(message: message)
                 }
             }
+            .background(Color.vintageCream)
             .navigationTitle("Menu")
             .sheet(isPresented: $state.isShowingRecipePicker) {
                 RecipePickerSheet()
@@ -42,14 +43,15 @@ struct MenuView: View {
 
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 50))
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.vintageTangerine)
 
-            Text("Something went wrong")
-                .font(.title2)
-                .fontWeight(.semibold)
+            Text("SOMETHING WENT WRONG")
+                .font(.vintageHeadline)
+                .foregroundColor(.vintageCoffee)
 
             Text(message)
-                .foregroundStyle(.secondary)
+                .font(.vintageBody)
+                .foregroundStyle(Color.vintageMutedCocoa)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
@@ -58,11 +60,12 @@ struct MenuView: View {
                     await menuState.loadCurrentMenu()
                 }
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
+            .buttonStyle(.vintagePill)
 
             Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.vintageCream)
     }
 }
 

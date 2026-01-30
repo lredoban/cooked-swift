@@ -9,9 +9,9 @@ struct RecipeCard: View {
                 AsyncImageView(url: recipe.imageUrl)
                     .frame(height: 120)
                     .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.vintageMutedCocoa.opacity(0.1))
                     .clipped()
-                    .cornerRadius(12)
+                    .cornerRadius(16)
                     .accessibilityHidden(true)
 
                 if recipe.importStatus == .importing {
@@ -22,18 +22,21 @@ struct RecipeCard: View {
             }
 
             Text(recipe.title)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(.vintageSubheadline)
+                .foregroundColor(.vintageCoffee)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
 
             if let sourceName = recipe.sourceName {
                 Text(sourceName)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.vintageCaption)
+                    .foregroundStyle(Color.vintageMutedCocoa)
                     .lineLimit(1)
             }
         }
+        .padding(12)
+        .background(Color.vintageWhite)
+        .cornerRadius(20)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint("Double tap to view recipe details")
@@ -44,12 +47,13 @@ struct RecipeCard: View {
             Image(systemName: icon)
             Text(text)
         }
-        .font(.caption2)
+        .font(.vintageCaption)
         .fontWeight(.medium)
+        .foregroundColor(.vintageCoffee)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(.ultraThinMaterial)
-        .cornerRadius(8)
+        .background(Color.vintageMarigold.opacity(0.9))
+        .cornerRadius(12)
         .padding(6)
     }
 
@@ -73,4 +77,5 @@ struct RecipeCard: View {
     ))
     .frame(width: 160)
     .padding()
+    .background(Color.vintageCream)
 }

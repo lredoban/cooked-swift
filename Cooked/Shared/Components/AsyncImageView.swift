@@ -12,7 +12,7 @@ struct AsyncImageView: View {
                     placeholder
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.vintageMutedCocoa)
                 case .success(let image):
                     image
                         .resizable()
@@ -21,7 +21,7 @@ struct AsyncImageView: View {
                     placeholder
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.vintageMutedCocoa)
                 @unknown default:
                     placeholder
                 }
@@ -30,7 +30,7 @@ struct AsyncImageView: View {
             placeholder
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.vintageMutedCocoa)
         }
     }
 }
@@ -38,4 +38,5 @@ struct AsyncImageView: View {
 #Preview {
     AsyncImageView(url: nil)
         .frame(width: 100, height: 100)
+        .background(Color.vintageCream)
 }

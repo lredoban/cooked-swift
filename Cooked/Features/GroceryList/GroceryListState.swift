@@ -331,18 +331,24 @@ extension Ingredient.IngredientCategory {
         switch self {
         case .produce: return 0
         case .meat: return 1
-        case .dairy: return 2
-        case .pantry: return 3
-        case .other: return 4
+        case .seafood: return 2
+        case .dairy: return 3
+        case .pantry: return 4
+        case .frozen: return 5
+        case .bakery: return 6
+        case .other: return 7
         }
     }
 
     var displayName: String {
         switch self {
         case .produce: return "Produce"
-        case .meat: return "Meat & Seafood"
-        case .dairy: return "Dairy"
+        case .meat: return "Meat & Poultry"
+        case .seafood: return "Seafood"
+        case .dairy: return "Dairy & Eggs"
         case .pantry: return "Pantry"
+        case .frozen: return "Frozen"
+        case .bakery: return "Bakery"
         case .other: return "Other"
         }
     }
@@ -351,8 +357,11 @@ extension Ingredient.IngredientCategory {
         switch self {
         case .produce: return "leaf.fill"
         case .meat: return "fork.knife"
-        case .dairy: return "drop.fill"
-        case .pantry: return "archivebox.fill"
+        case .seafood: return "fish.fill"
+        case .dairy: return "cup.and.saucer.fill"
+        case .pantry: return "cabinet.fill"
+        case .frozen: return "snowflake"
+        case .bakery: return "birthday.cake.fill"
         case .other: return "basket.fill"
         }
     }

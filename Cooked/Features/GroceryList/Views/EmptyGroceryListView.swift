@@ -9,27 +9,29 @@ struct EmptyGroceryListView: View {
 
             Image(systemName: "checklist")
                 .font(.system(size: 60))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.vintageMutedCocoa)
 
-            Text("No Grocery List")
-                .font(.title2)
-                .fontWeight(.semibold)
+            Text("NO GROCERY LIST")
+                .font(.vintageHeadline)
+                .foregroundColor(.vintageCoffee)
 
             Text("Generate a list from your menu to start shopping")
-                .foregroundStyle(.secondary)
+                .font(.vintageBody)
+                .foregroundStyle(Color.vintageMutedCocoa)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
             Button(action: onGoToMenu) {
                 Label("Go to Menu", systemImage: "menucard")
-                    .font(.headline)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
+            .buttonStyle(.vintagePill)
             .padding(.top, 8)
 
             Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.vintageCream)
+        .tabBarPadding()
     }
 }
 

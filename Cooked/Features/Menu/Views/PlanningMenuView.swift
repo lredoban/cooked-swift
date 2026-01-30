@@ -15,8 +15,8 @@ struct PlanningMenuView: View {
                 // Header
                 HStack {
                     Text("\(menu.items.count) recipe\(menu.items.count == 1 ? "" : "s")")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.vintageCaption)
+                        .foregroundStyle(Color.vintageMutedCocoa)
 
                     Spacer()
 
@@ -24,7 +24,8 @@ struct PlanningMenuView: View {
                         menuState.openRecipePicker()
                     } label: {
                         Label("Add", systemImage: "plus")
-                            .font(.subheadline)
+                            .font(.vintageLabel)
+                            .foregroundColor(.vintageTangerine)
                     }
                 }
                 .padding(.horizontal)
@@ -39,28 +40,29 @@ struct PlanningMenuView: View {
             }
             .padding(.top)
         }
+        .background(Color.vintageCream)
         .safeAreaInset(edge: .bottom) {
-            // "Start Cooking" button
-            if !menu.items.isEmpty {
-                VStack(spacing: 0) {
-                    Divider()
+            // "Start Cooking" button + tab bar spacing
+            VStack(spacing: 0) {
+                if !menu.items.isEmpty {
+                    Rectangle()
+                        .fill(Color.vintageMutedCocoa.opacity(0.2))
+                        .frame(height: 1)
                     Button {
                         Task {
                             await menuState.startCooking()
                         }
                     } label: {
                         Text("Ready to Cook")
-                            .font(.headline)
                             .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
                     }
+                    .buttonStyle(.vintage)
                     .padding()
                 }
-                .background(.ultraThinMaterial)
+                // Space for floating tab bar
+                Color.clear.frame(height: 90)
             }
+            .background(!menu.items.isEmpty ? Color.vintageWhite : Color.clear)
         }
     }
 }
