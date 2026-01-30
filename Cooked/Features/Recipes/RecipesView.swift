@@ -21,6 +21,7 @@ struct RecipesView: View {
                     recipeGridView
                 }
             }
+            .background(Color.vintageCream)
             .navigationTitle("Recipes")
             .searchable(text: $state.searchText, prompt: "Search recipes")
             .toolbar {
@@ -31,6 +32,7 @@ struct RecipesView: View {
                             recipeState.startImport()
                         } label: {
                             Image(systemName: "plus")
+                                .foregroundColor(.vintageTangerine)
                         }
                     }
                 }
@@ -53,26 +55,28 @@ struct RecipesView: View {
 
             Image(systemName: "book.fill")
                 .font(.system(size: 60))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.vintageMutedCocoa)
 
-            Text("No Recipes Yet")
-                .font(.title)
+            Text("NO RECIPES YET")
+                .font(.vintageHeadline)
+                .foregroundColor(.vintageCoffee)
 
             Text("Import your first recipe to get started")
-                .foregroundStyle(.secondary)
+                .font(.vintageBody)
+                .foregroundStyle(Color.vintageMutedCocoa)
 
             Button {
                 recipeState.startImport()
             } label: {
                 Label("Import Recipe", systemImage: "plus")
-                    .font(.headline)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
+            .buttonStyle(.vintagePill)
             .padding(.top, 8)
 
             Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.vintageCream)
     }
 
     private var recipeGridView: some View {
@@ -90,14 +94,15 @@ struct RecipesView: View {
                 // Results count
                 HStack {
                     Text(resultsText)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.vintageCaption)
+                        .foregroundStyle(Color.vintageMutedCocoa)
 
                     if hasActiveFilters {
                         Button("Clear") {
                             recipeState.clearFilters()
                         }
-                        .font(.subheadline)
+                        .font(.vintageCaption)
+                        .foregroundColor(.vintageTangerine)
                     }
                 }
                 .padding(.horizontal)
@@ -133,6 +138,7 @@ struct RecipesView: View {
             }
             .padding(.top)
         }
+        .background(Color.vintageCream)
         .refreshable {
             await recipeState.loadRecipes()
         }
@@ -142,20 +148,22 @@ struct RecipesView: View {
         VStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 40))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.vintageMutedCocoa)
 
-            Text("No recipes found")
-                .font(.headline)
+            Text("NO RECIPES FOUND")
+                .font(.vintageHeadline)
+                .foregroundColor(.vintageCoffee)
 
             Text("Try adjusting your search or filters")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.vintageBody)
+                .foregroundStyle(Color.vintageMutedCocoa)
 
             Button("Clear Filters") {
                 recipeState.clearFilters()
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.vintageSecondary)
             .padding(.top, 4)
+            .padding(.horizontal, 60)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 60)

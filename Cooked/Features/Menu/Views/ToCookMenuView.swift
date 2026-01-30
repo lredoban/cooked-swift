@@ -13,17 +13,18 @@ struct ToCookMenuView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("\(menu.cookedCount) of \(menu.totalCount) cooked")
-                            .font(.headline)
+                            .font(.vintageSubheadline)
+                            .foregroundColor(.vintageCoffee)
 
                         Spacer()
 
                         Text("\(Int(menu.progress * 100))%")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .font(.vintageCaption)
+                            .foregroundStyle(Color.vintageMutedCocoa)
                     }
 
                     ProgressView(value: menu.progress)
-                        .tint(.orange)
+                        .tint(Color.vintageTangerine)
                 }
                 .padding(.horizontal)
                 .accessibilityElement(children: .ignore)
@@ -34,11 +35,9 @@ struct ToCookMenuView: View {
                     groceryState.prepareListGeneration(from: menu)
                 } label: {
                     Label("Generate Grocery List", systemImage: "checklist")
-                        .font(.headline)
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
+                .buttonStyle(.vintage)
                 .padding(.horizontal)
                 .accessibilityHint("Creates a shopping list from your menu recipes")
 
@@ -52,6 +51,7 @@ struct ToCookMenuView: View {
             }
             .padding(.top)
         }
+        .background(Color.vintageCream)
         .sheet(isPresented: Binding(
             get: { groceryState.isShowingGenerateSheet },
             set: { groceryState.isShowingGenerateSheet = $0 }
@@ -85,6 +85,7 @@ struct ToCookMenuView: View {
             }
         } label: {
             Image(systemName: "ellipsis.circle")
+                .foregroundColor(.vintageTangerine)
         }
     }
 }
@@ -106,35 +107,34 @@ struct ToCookRecipeRow: View {
             } label: {
                 Image(systemName: item.isCooked ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
-                    .foregroundStyle(item.isCooked ? .green : .secondary)
+                    .foregroundStyle(item.isCooked ? Color.vintageLeafy : Color.vintageMutedCocoa)
             }
             .accessibilityLabel(item.isCooked ? "Mark \(item.recipe.title) as not cooked" : "Mark \(item.recipe.title) as cooked")
 
             AsyncImageView(url: item.recipe.imageUrl)
                 .frame(width: 60, height: 60)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(8)
+                .background(Color.vintageMutedCocoa.opacity(0.1))
+                .cornerRadius(12)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.recipe.title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.vintageSubheadline)
                     .strikethrough(item.isCooked)
-                    .foregroundStyle(item.isCooked ? .secondary : .primary)
+                    .foregroundStyle(item.isCooked ? Color.vintageMutedCocoa : Color.vintageCoffee)
 
                 if let sourceName = item.recipe.sourceName {
                     Text(sourceName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.vintageCaption)
+                        .foregroundStyle(Color.vintageMutedCocoa)
                 }
             }
 
             Spacer()
         }
         .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
+        .background(Color.vintageWhite)
+        .cornerRadius(16)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(item.recipe.title), \(item.isCooked ? "cooked" : "not yet cooked")")
     }

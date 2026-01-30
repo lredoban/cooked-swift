@@ -9,12 +9,12 @@ struct TagChip: View {
     var body: some View {
         Button(action: action) {
             Text(tag)
-                .font(.subheadline)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(isSelected ? Color.orange : Color.orange.opacity(0.15))
-                .foregroundStyle(isSelected ? .white : .orange)
-                .cornerRadius(16)
+                .font(.vintageLabel)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(isSelected ? Color.vintageMarigold : Color.vintageMarigold.opacity(0.2))
+                .foregroundStyle(isSelected ? Color.vintageCoffee : Color.vintageMutedCocoa)
+                .cornerRadius(20)
         }
         .buttonStyle(.plain)
     }
@@ -27,4 +27,5 @@ struct TagChip: View {
         TagChip(tag: "vegetarian", isSelected: false, action: {})
     }
     .padding()
+    .background(Color.vintageCream)
 }

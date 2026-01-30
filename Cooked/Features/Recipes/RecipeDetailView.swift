@@ -18,17 +18,17 @@ struct RecipeDetailView: View {
 
                 VStack(alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(recipe.title)
-                            .font(.title)
-                            .fontWeight(.bold)
+                        Text(recipe.title.uppercased())
+                            .font(.vintageTitle)
+                            .foregroundColor(.vintageCoffee)
 
                         if let sourceName = recipe.sourceName {
                             HStack {
                                 Image(systemName: sourceIcon)
                                 Text(sourceName)
                             }
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .font(.vintageCaption)
+                            .foregroundStyle(Color.vintageMutedCocoa)
                         }
                     }
 
@@ -39,74 +39,85 @@ struct RecipeDetailView: View {
                         Label("\(recipe.ingredients.count) ingredients", systemImage: "list.bullet")
                         Label("\(recipe.steps.count) steps", systemImage: "text.alignleft")
                     }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.vintageCaption)
+                    .foregroundStyle(Color.vintageMutedCocoa)
 
-                    Divider()
+                    Rectangle()
+                        .fill(Color.vintageMutedCocoa.opacity(0.2))
+                        .frame(height: 1)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Ingredients")
-                            .font(.title2)
-                            .fontWeight(.semibold)
+                        Text("INGREDIENTS")
+                            .font(.vintageHeadline)
+                            .foregroundColor(.vintageCoffee)
 
                         ForEach(recipe.ingredients) { ingredient in
                             HStack(alignment: .top) {
                                 Circle()
-                                    .fill(Color.orange)
+                                    .fill(Color.vintageTangerine)
                                     .frame(width: 6, height: 6)
                                     .padding(.top, 6)
 
                                 VStack(alignment: .leading) {
                                     if let qty = ingredient.quantity {
                                         Text(qty)
+                                            .font(.vintageBody)
                                             .fontWeight(.medium)
+                                            .foregroundColor(.vintageCoffee)
                                     }
                                     Text(ingredient.text)
+                                        .font(.vintageBody)
+                                        .foregroundColor(.vintageCoffee)
                                 }
                             }
                         }
                     }
 
-                    Divider()
+                    Rectangle()
+                        .fill(Color.vintageMutedCocoa.opacity(0.2))
+                        .frame(height: 1)
 
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Instructions")
-                            .font(.title2)
-                            .fontWeight(.semibold)
+                        Text("INSTRUCTIONS")
+                            .font(.vintageHeadline)
+                            .foregroundColor(.vintageCoffee)
 
                         ForEach(Array(recipe.steps.enumerated()), id: \.offset) { index, step in
                             HStack(alignment: .top, spacing: 12) {
                                 Text("\(index + 1)")
-                                    .font(.headline)
+                                    .font(.vintageButton)
                                     .foregroundStyle(.white)
                                     .frame(width: 28, height: 28)
-                                    .background(Color.orange)
+                                    .background(Color.vintageTangerine)
                                     .clipShape(Circle())
 
                                 Text(step)
-                                    .font(.body)
+                                    .font(.vintageBody)
+                                    .foregroundColor(.vintageCoffee)
                             }
                             .padding(.vertical, 4)
                         }
                     }
 
                     if !recipe.tags.isEmpty {
-                        Divider()
+                        Rectangle()
+                            .fill(Color.vintageMutedCocoa.opacity(0.2))
+                            .frame(height: 1)
 
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Tags")
-                                .font(.title2)
-                                .fontWeight(.semibold)
+                            Text("TAGS")
+                                .font(.vintageHeadline)
+                                .foregroundColor(.vintageCoffee)
 
                             FlowLayout(spacing: 8) {
                                 ForEach(recipe.tags, id: \.self) { tag in
                                     Text(tag)
-                                        .font(.caption)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(Color.orange.opacity(0.15))
-                                        .foregroundStyle(.orange)
-                                        .cornerRadius(16)
+                                        .font(.vintageCaption)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 8)
+                                        .background(Color.vintageMarigold.opacity(0.2))
+                                        .foregroundStyle(Color.vintageMutedCocoa)
+                                        .cornerRadius(20)
                                 }
                             }
                         }
@@ -115,6 +126,7 @@ struct RecipeDetailView: View {
                 .padding()
             }
         }
+        .background(Color.vintageCream)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .destructiveAction) {
@@ -122,6 +134,7 @@ struct RecipeDetailView: View {
                     showDeleteConfirmation = true
                 } label: {
                     Image(systemName: "trash")
+                        .foregroundColor(.vintageBurnt)
                 }
             }
         }

@@ -20,17 +20,18 @@ struct ActiveGroceryListView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("\(groceryState.checkedCount) of \(groceryState.totalCount) items")
-                            .font(.headline)
+                            .font(.vintageSubheadline)
+                            .foregroundColor(.vintageCoffee)
 
                         Spacer()
 
                         Text("\(Int(groceryState.progress * 100))%")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .font(.vintageCaption)
+                            .foregroundStyle(Color.vintageMutedCocoa)
                     }
 
                     ProgressView(value: groceryState.progress)
-                        .tint(.green)
+                        .tint(Color.vintageLeafy)
                 }
                 .padding(.horizontal)
                 .accessibilityElement(children: .ignore)
@@ -49,6 +50,7 @@ struct ActiveGroceryListView: View {
             }
             .padding(.top)
         }
+        .background(Color.vintageCream)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 SwiftUI.Menu {
@@ -65,6 +67,7 @@ struct ActiveGroceryListView: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
+                        .foregroundColor(.vintageTangerine)
                 }
             }
         }
@@ -114,24 +117,24 @@ struct ShareLinkSheet: View {
                     if isLoading {
                         // Loading state with spinning animation
                         Circle()
-                            .stroke(Color.green.opacity(0.3), lineWidth: 4)
+                            .stroke(Color.vintageLeafy.opacity(0.3), lineWidth: 4)
                             .frame(width: 80, height: 80)
 
                         Circle()
                             .trim(from: 0, to: 0.3)
-                            .stroke(Color.green, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                            .stroke(Color.vintageLeafy, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                             .frame(width: 80, height: 80)
                             .rotationEffect(.degrees(-90))
                             .modifier(SpinningModifier())
 
                         Image(systemName: "link")
                             .font(.system(size: 32))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.vintageLeafy)
                     } else {
                         // Ready state
                         Image(systemName: "link.circle.fill")
                             .font(.system(size: 80))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.vintageLeafy)
                             .transition(.scale.combined(with: .opacity))
                     }
                 }
@@ -139,15 +142,15 @@ struct ShareLinkSheet: View {
                 .frame(height: 80)
 
                 // Title
-                Text(isLoading ? "Creating link..." : "Share Grocery List")
-                    .font(.title2)
-                    .fontWeight(.semibold)
+                Text(isLoading ? "CREATING LINK..." : "SHARE GROCERY LIST")
+                    .font(.vintageHeadline)
+                    .foregroundColor(.vintageCoffee)
                     .animation(.easeInOut, value: isLoading)
 
                 // Description
                 Text("Anyone with this link can view and check off items in real-time.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.vintageBody)
+                    .foregroundStyle(Color.vintageMutedCocoa)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 
@@ -168,19 +171,19 @@ struct ShareLinkSheet: View {
                             HStack {
                                 Text(url.absoluteString)
                                     .font(.system(.subheadline, design: .monospaced))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(Color.vintageCoffee)
                                     .lineLimit(1)
                                     .truncationMode(.middle)
 
                                 Spacer()
 
                                 Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.doc")
-                                    .foregroundStyle(copied ? .green : .secondary)
+                                    .foregroundStyle(copied ? Color.vintageLeafy : Color.vintageMutedCocoa)
                                     .contentTransition(.symbolEffect(.replace))
                             }
                             .padding()
-                            .background(Color(.secondarySystemBackground))
-                            .cornerRadius(12)
+                            .background(Color.vintageWhite)
+                            .cornerRadius(16)
                         }
                         .buttonStyle(.plain)
                         .padding(.horizontal)
@@ -189,8 +192,8 @@ struct ShareLinkSheet: View {
                         // Feedback text
                         if copied {
                             Text("Copied to clipboard!")
-                                .font(.caption)
-                                .foregroundStyle(.green)
+                                .font(.vintageCaption)
+                                .foregroundStyle(Color.vintageLeafy)
                                 .transition(.opacity)
                         }
 
@@ -199,8 +202,7 @@ struct ShareLinkSheet: View {
                             Label("Share", systemImage: "square.and.arrow.up")
                                 .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.green)
+                        .buttonStyle(.vintage(backgroundColor: .vintageLeafy))
                         .padding(.horizontal)
 
                         // Revoke link button
@@ -211,7 +213,8 @@ struct ShareLinkSheet: View {
                             }
                         } label: {
                             Text("Revoke Link")
-                                .font(.subheadline)
+                                .font(.vintageCaption)
+                                .foregroundColor(.vintageBurnt)
                         }
                         .padding(.top, 8)
                     }
@@ -219,18 +222,21 @@ struct ShareLinkSheet: View {
                 } else if !isLoading {
                     // Fallback if link generation failed
                     Text("Failed to create link. Please try again.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.vintageBody)
+                        .foregroundStyle(Color.vintageMutedCocoa)
                 }
 
                 Spacer()
             }
+            .background(Color.vintageCream)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
                         dismiss()
                     }
+                    .font(.vintageButton)
+                    .foregroundColor(.vintageTangerine)
                 }
             }
         }
@@ -277,10 +283,11 @@ struct CategorySection: View {
             // Category Header
             HStack(spacing: 8) {
                 Image(systemName: category.iconName)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.vintageMutedCocoa)
                     .accessibilityHidden(true)
-                Text(category.displayName)
-                    .font(.headline)
+                Text(category.displayName.uppercased())
+                    .font(.vintageLabel)
+                    .foregroundColor(.vintageCoffee)
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(category.displayName) section, \(checkedCount) of \(items.count) items checked")
@@ -292,13 +299,15 @@ struct CategorySection: View {
                     GroceryItemRow(item: item)
 
                     if item.id != items.last?.id {
-                        Divider()
+                        Rectangle()
+                            .fill(Color.vintageMutedCocoa.opacity(0.1))
+                            .frame(height: 1)
                             .padding(.leading, 44)
                     }
                 }
             }
-            .background(Color(.secondarySystemBackground))
-            .cornerRadius(12)
+            .background(Color.vintageWhite)
+            .cornerRadius(16)
         }
     }
 }
@@ -316,18 +325,18 @@ struct GroceryItemRow: View {
             HStack(spacing: 12) {
                 Image(systemName: item.isChecked ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(item.isChecked ? .green : .secondary)
+                    .foregroundStyle(item.isChecked ? Color.vintageLeafy : Color.vintageMutedCocoa)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.text)
-                        .font(.body)
+                        .font(.vintageBody)
                         .strikethrough(item.isChecked)
-                        .foregroundStyle(item.isChecked ? .secondary : .primary)
+                        .foregroundStyle(item.isChecked ? Color.vintageMutedCocoa : Color.vintageCoffee)
 
                     if let qty = item.quantity {
                         Text(qty)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .font(.vintageCaption)
+                            .foregroundStyle(Color.vintageMutedCocoa)
                     }
                 }
 
@@ -363,11 +372,14 @@ struct GroceryItemRow: View {
                 menuId: UUID(),
                 items: [
                     GroceryItem(text: "Chicken breast", quantity: "2 lbs", category: .meat, isChecked: false),
-                    GroceryItem(text: "Salmon fillet", quantity: "1 lb", category: .meat, isChecked: true),
+                    GroceryItem(text: "Salmon fillet", quantity: "1 lb", category: .seafood, isChecked: true),
                     GroceryItem(text: "Spinach", quantity: "1 bag", category: .produce, isChecked: false),
                     GroceryItem(text: "Tomatoes", quantity: "4", category: .produce, isChecked: false),
                     GroceryItem(text: "Milk", quantity: "1 gallon", category: .dairy, isChecked: true),
-                    GroceryItem(text: "Pasta", quantity: "1 box", category: .pantry, isChecked: false)
+                    GroceryItem(text: "Pasta", quantity: "1 box", category: .pantry, isChecked: false),
+                    GroceryItem(text: "Ice cream", quantity: "1 pint", category: .frozen, isChecked: false),
+                    GroceryItem(text: "Bread", quantity: "1 loaf", category: .bakery, isChecked: false),
+                    GroceryItem(text: "Paper towels", quantity: "1 roll", category: .other, isChecked: false)
                 ],
                 staplesConfirmed: ["salt", "pepper"],
                 createdAt: Date(),

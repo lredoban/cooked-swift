@@ -10,5 +10,11 @@
 	<string>$(SUPABASE_ANON_KEY)</string>
 	<key>SUPABASE_URL</key>
 	<string>$(SUPABASE_URL)</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>BebasNeue-Regular.ttf</string>
+		<string>DMSans-VariableFont_opsz,wght.ttf</string>
+		<string>PlayfairDisplay-VariableFont_wght.ttf</string>
+	</array>
 </dict>
 </plist>
