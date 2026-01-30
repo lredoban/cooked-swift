@@ -4,6 +4,13 @@
 //
 //  The Curated Kitchen - Warm, editorial floating tab bar
 //
+//  STYLE PHILOSOPHY:
+//  "A Digital Sanctuary" — The Curated Kitchen channels the quiet elegance of Kinfolk
+//  magazine and Aesop stores. Warm oatmeal backgrounds, terracotta accents, and delicate
+//  serif typography create a sense of calm intentionality. This style is for users who
+//  approach cooking as a mindful ritual, not a chore. Every element breathes, with generous
+//  whitespace and soft shadows that make the app feel like a beautifully designed cookbook.
+//
 
 import SwiftUI
 
