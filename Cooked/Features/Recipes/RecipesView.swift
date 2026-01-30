@@ -4,8 +4,8 @@ struct RecipesView: View {
     @Environment(RecipeState.self) private var recipeState
 
     private let columns = [
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
+        GridItem(.flexible(), spacing: ElectricUI.gridSpacing),
+        GridItem(.flexible(), spacing: ElectricUI.gridSpacing)
     ]
 
     var body: some View {
@@ -21,6 +21,7 @@ struct RecipesView: View {
                     recipeGridView
                 }
             }
+            .warmConcreteBackground()
             .navigationTitle("Recipes")
             .searchable(text: $state.searchText, prompt: "Search recipes")
             .toolbar {
@@ -31,6 +32,8 @@ struct RecipesView: View {
                             recipeState.startImport()
                         } label: {
                             Image(systemName: "plus")
+                                .fontWeight(.semibold)
+                                .foregroundColor(.hyperOrange)
                         }
                     }
                 }
@@ -48,27 +51,38 @@ struct RecipesView: View {
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Spacer()
 
-            Image(systemName: "book.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(.secondary)
+            // Playful icon with background
+            ZStack {
+                Circle()
+                    .fill(Color.hyperOrange.opacity(0.1))
+                    .frame(width: 120, height: 120)
+
+                Image(systemName: "book.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(Color.hyperOrange)
+            }
 
             Text("No Recipes Yet")
-                .font(.title)
+                .font(.electricDisplay)
+                .foregroundColor(.ink)
 
             Text("Import your first recipe to get started")
-                .foregroundStyle(.secondary)
+                .font(.electricBody)
+                .foregroundColor(.graphite)
 
             Button {
                 recipeState.startImport()
             } label: {
-                Label("Import Recipe", systemImage: "plus")
-                    .font(.headline)
+                HStack(spacing: 8) {
+                    Image(systemName: "plus")
+                    Text("Import Recipe")
+                }
+                .electricPrimaryButton()
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
+            .padding(.horizontal, 40)
             .padding(.top, 8)
 
             Spacer()
@@ -77,7 +91,7 @@ struct RecipesView: View {
 
     private var recipeGridView: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: ElectricUI.gridSpacing) {
                 // Tag filter bar
                 if !recipeState.allTags.isEmpty {
                     TagFilterBar(
@@ -90,14 +104,16 @@ struct RecipesView: View {
                 // Results count
                 HStack {
                     Text(resultsText)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.electricCaption)
+                        .foregroundColor(.graphite)
 
                     if hasActiveFilters {
                         Button("Clear") {
                             recipeState.clearFilters()
                         }
-                        .font(.subheadline)
+                        .font(.electricCaption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.hyperOrange)
                     }
                 }
                 .padding(.horizontal)
@@ -106,7 +122,7 @@ struct RecipesView: View {
                 if recipeState.filteredRecipes.isEmpty {
                     noResultsView
                 } else {
-                    LazyVGrid(columns: columns, spacing: 16) {
+                    LazyVGrid(columns: columns, spacing: ElectricUI.gridSpacing) {
                         ForEach(recipeState.filteredRecipes) { recipe in
                             if recipe.importStatus == .pendingReview {
                                 Button {
@@ -139,22 +155,29 @@ struct RecipesView: View {
     }
 
     private var noResultsView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 40))
-                .foregroundStyle(.secondary)
+        VStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(Color.warmConcrete)
+                    .frame(width: 80, height: 80)
+
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 32))
+                    .foregroundStyle(Color.graphite)
+            }
 
             Text("No recipes found")
-                .font(.headline)
+                .font(.electricSubheadline)
+                .foregroundColor(.ink)
 
             Text("Try adjusting your search or filters")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.electricCaption)
+                .foregroundColor(.graphite)
 
             Button("Clear Filters") {
                 recipeState.clearFilters()
             }
-            .buttonStyle(.bordered)
+            .electricSecondaryButton()
             .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)

@@ -8,23 +8,28 @@ struct ToCookMenuView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Progress Header
-                VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ElectricUI.sectionSpacing) {
+                // Progress Header with Health Bar
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("\(menu.cookedCount) of \(menu.totalCount) cooked")
-                            .font(.headline)
+                            .font(.electricSubheadline)
+                            .foregroundColor(.ink)
 
                         Spacer()
-
-                        Text("\(Int(menu.progress * 100))%")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
                     }
 
-                    ProgressView(value: menu.progress)
-                        .tint(.orange)
+                    ElectricProgressBar(progress: menu.progress, showPercentage: true)
                 }
+                .padding()
+                .background(Color.surfaceWhite)
+                .clipShape(RoundedRectangle(cornerRadius: ElectricUI.cornerRadius))
+                .shadow(
+                    color: .black.opacity(ElectricUI.cardShadowOpacity),
+                    radius: ElectricUI.cardShadowRadius,
+                    x: 0,
+                    y: ElectricUI.cardShadowY
+                )
                 .padding(.horizontal)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Cooking progress: \(menu.cookedCount) of \(menu.totalCount) recipes cooked, \(Int(menu.progress * 100)) percent complete")
@@ -33,12 +38,12 @@ struct ToCookMenuView: View {
                 Button {
                     groceryState.prepareListGeneration(from: menu)
                 } label: {
-                    Label("Generate Grocery List", systemImage: "checklist")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
+                    HStack(spacing: 8) {
+                        Image(systemName: "checklist")
+                        Text("Generate Grocery List")
+                    }
+                    .electricPrimaryButton()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
                 .padding(.horizontal)
                 .accessibilityHint("Creates a shopping list from your menu recipes")
 
@@ -52,6 +57,7 @@ struct ToCookMenuView: View {
             }
             .padding(.top)
         }
+        .warmConcreteBackground()
         .sheet(isPresented: Binding(
             get: { groceryState.isShowingGenerateSheet },
             set: { groceryState.isShowingGenerateSheet = $0 }
@@ -85,6 +91,7 @@ struct ToCookMenuView: View {
             }
         } label: {
             Image(systemName: "ellipsis.circle")
+                .foregroundColor(.hyperOrange)
         }
     }
 }
@@ -94,8 +101,9 @@ struct ToCookRecipeRow: View {
     @Environment(MenuState.self) private var menuState
 
     var body: some View {
-        HStack(spacing: 12) {
-            Button {
+        HStack(spacing: 16) {
+            // Large checkbox
+            ElectricCheckbox(isChecked: item.isCooked) {
                 Task {
                     if item.isCooked {
                         await menuState.unmarkRecipeCooked(item)
@@ -103,38 +111,40 @@ struct ToCookRecipeRow: View {
                         await menuState.markRecipeCooked(item)
                     }
                 }
-            } label: {
-                Image(systemName: item.isCooked ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundStyle(item.isCooked ? .green : .secondary)
             }
             .accessibilityLabel(item.isCooked ? "Mark \(item.recipe.title) as not cooked" : "Mark \(item.recipe.title) as cooked")
 
             AsyncImageView(url: item.recipe.imageUrl)
-                .frame(width: 60, height: 60)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(8)
+                .frame(width: 64, height: 64)
+                .background(Color.warmConcrete)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.recipe.title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.electricSubheadline)
                     .strikethrough(item.isCooked)
-                    .foregroundStyle(item.isCooked ? .secondary : .primary)
+                    .foregroundColor(item.isCooked ? .graphite : .ink)
 
                 if let sourceName = item.recipe.sourceName {
                     Text(sourceName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.electricCaption)
+                        .foregroundColor(.graphite)
                 }
             }
 
             Spacer()
         }
         .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
+        .background(Color.surfaceWhite)
+        .clipShape(RoundedRectangle(cornerRadius: ElectricUI.cornerRadius))
+        .shadow(
+            color: .black.opacity(ElectricUI.cardShadowOpacity),
+            radius: ElectricUI.cardShadowRadius,
+            x: 0,
+            y: ElectricUI.cardShadowY
+        )
+        .opacity(item.isCooked ? 0.7 : 1.0)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(item.recipe.title), \(item.isCooked ? "cooked" : "not yet cooked")")
     }
@@ -171,4 +181,5 @@ struct ToCookRecipeRow: View {
         .navigationTitle("Menu")
     }
     .environment(MenuState())
+    .environment(GroceryListState())
 }
