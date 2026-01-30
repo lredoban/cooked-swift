@@ -4,6 +4,14 @@
 //
 //  Electric Utility - Nintendo-inspired floating tab bar with bouncy interactions
 //
+//  STYLE PHILOSOPHY:
+//  "The Nintendo Approach" — Electric Utility brings joy and playfulness to everyday
+//  cooking. Inspired by Nintendo's design language, Duolingo, and modern fintech apps,
+//  this style prioritizes tactile feedback and delightful micro-interactions. Rounded
+//  corners, bouncy animations, and vibrant orange accents make every tap feel rewarding.
+//  It's utility software that doesn't take itself too seriously—functional, friendly,
+//  and fun.
+//
 
 import SwiftUI
 
