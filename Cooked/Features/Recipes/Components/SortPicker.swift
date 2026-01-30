@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// A menu picker for selecting recipe sort order
+/// A menu picker for selecting recipe sort order with Curated Kitchen styling
 struct SortPicker: View {
     @Binding var selection: RecipeSortOption
 
@@ -13,6 +13,7 @@ struct SortPicker: View {
             }
         } label: {
             Label("Sort", systemImage: "arrow.up.arrow.down")
+                .foregroundStyle(Color.curatedTerracotta)
         }
     }
 }

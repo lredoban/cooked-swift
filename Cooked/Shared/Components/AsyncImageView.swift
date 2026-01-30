@@ -9,28 +9,30 @@ struct AsyncImageView: View {
             AsyncImage(url: imageURL) { phase in
                 switch phase {
                 case .empty:
-                    placeholder
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .foregroundStyle(.secondary)
+                    placeholderView
                 case .success(let image):
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 case .failure:
-                    placeholder
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .foregroundStyle(.secondary)
+                    placeholderView
                 @unknown default:
-                    placeholder
+                    placeholderView
                 }
             }
         } else {
+            placeholderView
+        }
+    }
+
+    private var placeholderView: some View {
+        ZStack {
+            Color.curatedBeige
             placeholder
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.curatedWarmGrey)
+                .frame(width: 32, height: 32)
         }
     }
 }
@@ -38,4 +40,5 @@ struct AsyncImageView: View {
 #Preview {
     AsyncImageView(url: nil)
         .frame(width: 100, height: 100)
+        .cornerRadius(12)
 }

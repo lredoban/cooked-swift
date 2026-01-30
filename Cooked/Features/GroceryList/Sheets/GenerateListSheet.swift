@@ -15,11 +15,12 @@ struct GenerateListSheet: View {
                     if !GroceryListState.commonStaples.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("I already have these staples:")
-                                .font(.headline)
+                                .font(.curatedHeadline)
+                                .foregroundStyle(Color.curatedCharcoal)
 
                             FlowLayout(spacing: 8) {
                                 ForEach(GroceryListState.commonStaples, id: \.self) { staple in
-                                    StapleChip(
+                                    CuratedStapleChip(
                                         text: staple,
                                         isSelected: groceryState.selectedStaples.contains(staple),
                                         action: {
@@ -40,11 +41,12 @@ struct GenerateListSheet: View {
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             Text("Items to add:")
-                                .font(.headline)
+                                .font(.curatedHeadline)
+                                .foregroundStyle(Color.curatedCharcoal)
                             Spacer()
                             Text("\(filteredItemCount) items")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .font(.curatedSubheadline)
+                                .foregroundStyle(Color.curatedWarmGrey)
                         }
 
                         // Group items by category
@@ -60,6 +62,7 @@ struct GenerateListSheet: View {
                 }
                 .padding(.vertical)
             }
+            .curatedBackground()
             .navigationTitle("Generate List")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -67,6 +70,7 @@ struct GenerateListSheet: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundStyle(Color.curatedWarmGrey)
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -76,10 +80,11 @@ struct GenerateListSheet: View {
                         }
                     } label: {
                         if groceryState.isGenerating {
-                            ProgressView()
+                            CuratedSpinner(size: 20)
                         } else {
                             Text("Create List")
-                                .fontWeight(.semibold)
+                                .font(.curatedSans(size: 17, weight: .semibold))
+                                .foregroundStyle(Color.curatedTerracotta)
                         }
                     }
                     .disabled(groceryState.isGenerating || filteredItemCount == 0)
@@ -104,31 +109,6 @@ struct GenerateListSheet: View {
     }
 }
 
-struct StapleChip: View {
-    let text: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .font(.caption)
-                }
-                Text(text.capitalized)
-                    .font(.subheadline)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(isSelected ? Color.green : Color.gray.opacity(0.15))
-            .foregroundStyle(isSelected ? .white : .primary)
-            .cornerRadius(16)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
 struct CategoryPreviewSection: View {
     let category: Ingredient.IngredientCategory
     let items: [GroceryItem]
@@ -147,32 +127,34 @@ struct CategoryPreviewSection: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 6) {
                     Image(systemName: category.iconName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.curatedCaption)
+                        .foregroundStyle(Color.curatedWarmGrey)
                     Text(category.displayName)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
+                        .font(.curatedSans(size: 14, weight: .medium))
+                        .foregroundStyle(Color.curatedWarmGrey)
                 }
 
                 ForEach(filteredItems) { item in
                     HStack {
                         Circle()
-                            .fill(Color.secondary.opacity(0.3))
+                            .fill(Color.curatedBeige)
                             .frame(width: 6, height: 6)
                         if let qty = item.quantity {
                             Text(qty)
-                                .fontWeight(.medium)
+                                .font(.curatedSans(size: 15, weight: .medium))
+                                .foregroundStyle(Color.curatedCharcoal)
                         }
                         Text(item.text)
+                            .font(.curatedSubheadline)
+                            .foregroundStyle(Color.curatedCharcoal)
                         Spacer()
                     }
-                    .font(.subheadline)
                 }
             }
             .padding()
-            .background(Color(.secondarySystemBackground))
+            .background(Color.curatedWhite)
             .cornerRadius(12)
+            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
         }
     }
 }
