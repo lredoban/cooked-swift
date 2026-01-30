@@ -13,17 +13,17 @@ struct ToCookMenuView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("\(menu.cookedCount) of \(menu.totalCount) cooked")
-                            .font(.headline)
+                            .font(.curatedHeadline)
+                            .foregroundStyle(Color.curatedCharcoal)
 
                         Spacer()
 
                         Text("\(Int(menu.progress * 100))%")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .font(.curatedSubheadline)
+                            .foregroundStyle(Color.curatedWarmGrey)
                     }
 
-                    ProgressView(value: menu.progress)
-                        .tint(.orange)
+                    CuratedProgressBar(value: menu.progress)
                 }
                 .padding(.horizontal)
                 .accessibilityElement(children: .ignore)
@@ -34,11 +34,13 @@ struct ToCookMenuView: View {
                     groceryState.prepareListGeneration(from: menu)
                 } label: {
                     Label("Generate Grocery List", systemImage: "checklist")
-                        .font(.headline)
+                        .font(.curatedSans(size: 17, weight: .semibold))
+                        .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.curatedTerracotta)
+                        .cornerRadius(24)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
                 .padding(.horizontal)
                 .accessibilityHint("Creates a shopping list from your menu recipes")
 
@@ -85,6 +87,7 @@ struct ToCookMenuView: View {
             }
         } label: {
             Image(systemName: "ellipsis.circle")
+                .foregroundStyle(Color.curatedTerracotta)
         }
     }
 }
@@ -106,35 +109,36 @@ struct ToCookRecipeRow: View {
             } label: {
                 Image(systemName: item.isCooked ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
-                    .foregroundStyle(item.isCooked ? .green : .secondary)
+                    .foregroundStyle(item.isCooked ? Color.curatedSage : Color.curatedWarmGrey)
             }
             .accessibilityLabel(item.isCooked ? "Mark \(item.recipe.title) as not cooked" : "Mark \(item.recipe.title) as cooked")
 
             AsyncImageView(url: item.recipe.imageUrl)
                 .frame(width: 60, height: 60)
-                .background(Color.gray.opacity(0.1))
+                .background(Color.curatedBeige)
                 .cornerRadius(8)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.recipe.title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.curatedHeadline)
                     .strikethrough(item.isCooked)
-                    .foregroundStyle(item.isCooked ? .secondary : .primary)
+                    .foregroundStyle(item.isCooked ? Color.curatedWarmGrey : Color.curatedCharcoal)
 
                 if let sourceName = item.recipe.sourceName {
-                    Text(sourceName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    Text(sourceName.uppercased())
+                        .font(.curatedCaption2)
+                        .foregroundStyle(Color.curatedWarmGrey)
+                        .tracking(0.5)
                 }
             }
 
             Spacer()
         }
         .padding()
-        .background(Color(.secondarySystemBackground))
+        .background(Color.curatedWhite)
         .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(item.recipe.title), \(item.isCooked ? "cooked" : "not yet cooked")")
     }
@@ -169,6 +173,8 @@ struct ToCookRecipeRow: View {
             )
         )
         .navigationTitle("Menu")
+        .curatedBackground()
     }
     .environment(MenuState())
+    .environment(GroceryListState())
 }

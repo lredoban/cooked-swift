@@ -9,23 +9,22 @@ struct EmptyGroceryListView: View {
 
             Image(systemName: "checklist")
                 .font(.system(size: 60))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.curatedWarmGrey)
 
             Text("No Grocery List")
-                .font(.title2)
-                .fontWeight(.semibold)
+                .font(.curatedTitle2)
+                .foregroundStyle(Color.curatedCharcoal)
 
             Text("Generate a list from your menu to start shopping")
-                .foregroundStyle(.secondary)
+                .font(.curatedSubheadline)
+                .foregroundStyle(Color.curatedWarmGrey)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
             Button(action: onGoToMenu) {
                 Label("Go to Menu", systemImage: "menucard")
-                    .font(.headline)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
+            .curatedButton()
             .padding(.top, 8)
 
             Spacer()
@@ -35,4 +34,5 @@ struct EmptyGroceryListView: View {
 
 #Preview {
     EmptyGroceryListView(onGoToMenu: {})
+        .curatedBackground()
 }

@@ -10,7 +10,7 @@ struct MenuRecipeCard: View {
                 AsyncImageView(url: item.recipe.imageUrl)
                     .frame(height: 120)
                     .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.curatedBeige)
                     .clipped()
                     .cornerRadius(12)
                     .accessibilityHidden(true)
@@ -23,18 +23,22 @@ struct MenuRecipeCard: View {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title3)
                         .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, .black.opacity(0.6))
+                        .foregroundStyle(.white, Color.curatedCharcoal.opacity(0.6))
                 }
                 .padding(8)
                 .accessibilityLabel("Remove \(item.recipe.title) from menu")
             }
 
             Text(item.recipe.title)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(.curatedHeadline)
+                .foregroundStyle(Color.curatedCharcoal)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
         }
+        .padding(12)
+        .background(Color.curatedWhite)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(item.recipe.title)
         .accessibilityHint(item.isCooked ? "Already cooked" : "Not yet cooked")
@@ -42,18 +46,22 @@ struct MenuRecipeCard: View {
 }
 
 #Preview {
-    MenuRecipeCard(
-        item: MenuItemWithRecipe(
-            id: UUID(),
-            recipe: Recipe(
-                userId: UUID(),
-                title: "Delicious Pasta",
-                sourceName: "TikTok"
-            ),
-            isCooked: false
+    ZStack {
+        Color.curatedOatmeal.ignoresSafeArea()
+
+        MenuRecipeCard(
+            item: MenuItemWithRecipe(
+                id: UUID(),
+                recipe: Recipe(
+                    userId: UUID(),
+                    title: "Delicious Pasta",
+                    sourceName: "TikTok"
+                ),
+                isCooked: false
+            )
         )
-    )
-    .environment(MenuState())
-    .frame(width: 160)
-    .padding()
+        .environment(MenuState())
+        .frame(width: 160)
+        .padding()
+    }
 }

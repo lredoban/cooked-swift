@@ -9,7 +9,7 @@ struct RecipeCard: View {
                 AsyncImageView(url: recipe.imageUrl)
                     .frame(height: 120)
                     .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.curatedBeige)
                     .clipped()
                     .cornerRadius(12)
                     .accessibilityHidden(true)
@@ -22,18 +22,23 @@ struct RecipeCard: View {
             }
 
             Text(recipe.title)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(.curatedHeadline)
+                .foregroundStyle(Color.curatedCharcoal)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
 
             if let sourceName = recipe.sourceName {
-                Text(sourceName)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Text(sourceName.uppercased())
+                    .font(.curatedCaption2)
+                    .foregroundStyle(Color.curatedWarmGrey)
                     .lineLimit(1)
+                    .tracking(0.5)
             }
         }
+        .padding(12)
+        .background(Color.curatedWhite)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint("Double tap to view recipe details")
@@ -44,12 +49,17 @@ struct RecipeCard: View {
             Image(systemName: icon)
             Text(text)
         }
-        .font(.caption2)
+        .font(.curatedCaption2)
         .fontWeight(.medium)
+        .foregroundStyle(Color.curatedSage)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(.ultraThinMaterial)
-        .cornerRadius(8)
+        .background(Color.curatedWhite.opacity(0.95))
+        .overlay(
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(Color.curatedSage, lineWidth: 1)
+        )
+        .cornerRadius(24)
         .padding(6)
     }
 
@@ -66,11 +76,15 @@ struct RecipeCard: View {
 }
 
 #Preview {
-    RecipeCard(recipe: Recipe(
-        userId: UUID(),
-        title: "Delicious Pasta Recipe with Tomato Sauce",
-        sourceName: "TikTok"
-    ))
-    .frame(width: 160)
-    .padding()
+    ZStack {
+        Color.curatedOatmeal.ignoresSafeArea()
+
+        RecipeCard(recipe: Recipe(
+            userId: UUID(),
+            title: "Delicious Pasta Recipe with Tomato Sauce",
+            sourceName: "TikTok"
+        ))
+        .frame(width: 160)
+        .padding()
+    }
 }

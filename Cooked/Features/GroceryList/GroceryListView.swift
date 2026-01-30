@@ -30,6 +30,7 @@ struct GroceryListView: View {
                     }
                 }
             }
+            .curatedBackground()
             .navigationTitle("Grocery List")
         }
         .task {
@@ -62,20 +63,20 @@ struct ErrorStateView: View {
 
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 50))
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.curatedTerracotta)
 
             Text("Something went wrong")
-                .font(.title2)
-                .fontWeight(.semibold)
+                .font(.curatedTitle2)
+                .foregroundStyle(Color.curatedCharcoal)
 
             Text(message)
-                .foregroundStyle(.secondary)
+                .font(.curatedSubheadline)
+                .foregroundStyle(Color.curatedWarmGrey)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
             Button("Try Again", action: onRetry)
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
+                .curatedButton()
                 .padding(.top, 8)
 
             Spacer()

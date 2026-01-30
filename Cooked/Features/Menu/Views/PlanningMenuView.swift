@@ -15,8 +15,8 @@ struct PlanningMenuView: View {
                 // Header
                 HStack {
                     Text("\(menu.items.count) recipe\(menu.items.count == 1 ? "" : "s")")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.curatedCaption)
+                        .foregroundStyle(Color.curatedWarmGrey)
 
                     Spacer()
 
@@ -24,7 +24,8 @@ struct PlanningMenuView: View {
                         menuState.openRecipePicker()
                     } label: {
                         Label("Add", systemImage: "plus")
-                            .font(.subheadline)
+                            .font(.curatedSans(size: 14, weight: .medium))
+                            .foregroundStyle(Color.curatedTerracotta)
                     }
                 }
                 .padding(.horizontal)
@@ -43,23 +44,26 @@ struct PlanningMenuView: View {
             // "Start Cooking" button
             if !menu.items.isEmpty {
                 VStack(spacing: 0) {
-                    Divider()
+                    Rectangle()
+                        .fill(Color.curatedBeige)
+                        .frame(height: 1)
+
                     Button {
                         Task {
                             await menuState.startCooking()
                         }
                     } label: {
                         Text("Ready to Cook")
-                            .font(.headline)
+                            .font(.curatedSans(size: 17, weight: .semibold))
+                            .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
+                            .background(Color.curatedTerracotta)
+                            .cornerRadius(24)
                     }
                     .padding()
                 }
-                .background(.ultraThinMaterial)
+                .background(Color.curatedOatmeal.opacity(0.95))
             }
         }
     }

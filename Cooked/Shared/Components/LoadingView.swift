@@ -5,14 +5,15 @@ struct LoadingView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            ProgressView()
-                .scaleEffect(1.5)
+            CuratedSpinner(size: 40)
             Text(message)
-                .foregroundStyle(.secondary)
+                .font(.curatedSubheadline)
+                .foregroundStyle(Color.curatedWarmGrey)
         }
     }
 }
 
 #Preview {
     LoadingView(message: "Loading recipes...")
+        .curatedBackground()
 }
