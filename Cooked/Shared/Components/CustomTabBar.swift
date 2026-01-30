@@ -4,6 +4,13 @@
 //
 //  Bold Swiss - Sharp geometric tab bar with inverted active state
 //
+//  STYLE PHILOSOPHY:
+//  "The Grid Is Sacred" — Bold Swiss embraces the rigor and clarity of International
+//  Typographic Style. Purely black and white, with sharp 0px corners and strict geometry,
+//  this style strips away decoration to reveal pure function. Inspired by Josef Müller-Brockmann
+//  and Massimo Vignelli, it treats the interface as a well-designed poster—every pixel
+//  intentional, every element precisely placed. For users who believe good design is invisible.
+//
 
 import SwiftUI
 
