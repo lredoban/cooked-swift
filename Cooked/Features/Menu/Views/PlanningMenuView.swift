@@ -15,8 +15,8 @@ struct PlanningMenuView: View {
                 // Header
                 HStack {
                     Text("\(menu.items.count) recipe\(menu.items.count == 1 ? "" : "s")")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.glassMono(13))
+                        .foregroundColor(.glassTextSecondary)
 
                     Spacer()
 
@@ -24,7 +24,8 @@ struct PlanningMenuView: View {
                         menuState.openRecipePicker()
                     } label: {
                         Label("Add", systemImage: "plus")
-                            .font(.subheadline)
+                            .font(.glassCaption(14))
+                            .foregroundColor(.accentOrangeStart)
                     }
                 }
                 .padding(.horizontal)
@@ -43,22 +44,24 @@ struct PlanningMenuView: View {
             // "Start Cooking" button
             if !menu.items.isEmpty {
                 VStack(spacing: 0) {
-                    Divider()
+                    Rectangle()
+                        .fill(Color.glassBorder)
+                        .frame(height: 1)
+
                     Button {
                         Task {
                             await menuState.startCooking()
                         }
                     } label: {
                         Text("Ready to Cook")
-                            .font(.headline)
+                            .font(.glassHeadline())
                             .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
+                            .glassButton()
                     }
+                    .buttonStyle(.plain)
                     .padding()
                 }
+                .background(Color.glassBackground.opacity(0.95))
                 .background(.ultraThinMaterial)
             }
         }
@@ -88,7 +91,9 @@ struct PlanningMenuView: View {
                 ]
             )
         )
+        .spatialBackground()
         .navigationTitle("Menu")
+        .toolbarColorScheme(.dark, for: .navigationBar)
     }
     .environment(MenuState())
 }

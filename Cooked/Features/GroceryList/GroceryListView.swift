@@ -30,8 +30,13 @@ struct GroceryListView: View {
                     }
                 }
             }
+            .spatialBackground()
             .navigationTitle("Grocery List")
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(Color.glassBackground.opacity(0.9), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
         }
+        .preferredColorScheme(.dark)
         .task {
             if let menuId = menuState.currentMenu?.id {
                 await groceryState.loadGroceryList(menuId: menuId)
@@ -57,25 +62,35 @@ struct ErrorStateView: View {
     let onRetry: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Spacer()
 
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 50))
-                .foregroundStyle(.orange)
+            // Glowing warning icon
+            ZStack {
+                Circle()
+                    .fill(LinearGradient.holographicOrange.opacity(0.2))
+                    .frame(width: 120, height: 120)
+                    .blur(radius: 20)
+
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.system(size: 50))
+                    .foregroundStyle(LinearGradient.holographicOrange)
+            }
 
             Text("Something went wrong")
-                .font(.title2)
-                .fontWeight(.semibold)
+                .font(.glassTitle())
+                .foregroundColor(.glassTextPrimary)
 
             Text(message)
-                .foregroundStyle(.secondary)
+                .font(.glassBody())
+                .foregroundColor(.glassTextSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
             Button("Try Again", action: onRetry)
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
+                .font(.glassHeadline())
+                .glassButton()
+                .buttonStyle(.plain)
                 .padding(.top, 8)
 
             Spacer()
