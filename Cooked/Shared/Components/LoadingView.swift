@@ -7,9 +7,13 @@ struct LoadingView: View {
         VStack(spacing: 16) {
             ProgressView()
                 .scaleEffect(1.5)
+                .tint(Color.dopamineAcid)
             Text(message)
-                .foregroundStyle(.secondary)
+                .font(.dopamineCaption)
+                .foregroundStyle(Color.dopamineSecondary)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.dopamineBlack)
     }
 }
 

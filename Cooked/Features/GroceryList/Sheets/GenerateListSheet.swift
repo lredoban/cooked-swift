@@ -15,7 +15,8 @@ struct GenerateListSheet: View {
                     if !GroceryListState.commonStaples.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("I already have these staples:")
-                                .font(.headline)
+                                .font(.dopamineHeadline)
+                                .foregroundStyle(.white)
 
                             FlowLayout(spacing: 8) {
                                 ForEach(GroceryListState.commonStaples, id: \.self) { staple in
@@ -40,11 +41,12 @@ struct GenerateListSheet: View {
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             Text("Items to add:")
-                                .font(.headline)
+                                .font(.dopamineHeadline)
+                                .foregroundStyle(.white)
                             Spacer()
                             Text("\(filteredItemCount) items")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .font(.dopamineCaption)
+                                .foregroundStyle(Color.dopamineSecondary)
                         }
 
                         // Group items by category
@@ -60,6 +62,7 @@ struct GenerateListSheet: View {
                 }
                 .padding(.vertical)
             }
+            .background(Color.dopamineBlack)
             .navigationTitle("Generate List")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -67,6 +70,7 @@ struct GenerateListSheet: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundStyle(Color.dopamineSecondary)
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -77,9 +81,12 @@ struct GenerateListSheet: View {
                     } label: {
                         if groceryState.isGenerating {
                             ProgressView()
+                                .tint(Color.dopamineAcid)
                         } else {
                             Text("Create List")
+                                .font(.dopamineSubheadline)
                                 .fontWeight(.semibold)
+                                .foregroundStyle(Color.dopamineAcid)
                         }
                     }
                     .disabled(groceryState.isGenerating || filteredItemCount == 0)
@@ -114,16 +121,20 @@ struct StapleChip: View {
             HStack(spacing: 4) {
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.caption)
+                        .font(.dopamineCaption)
                 }
                 Text(text.capitalized)
-                    .font(.subheadline)
+                    .font(.dopamineSubheadline)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(isSelected ? Color.green : Color.gray.opacity(0.15))
-            .foregroundStyle(isSelected ? .white : .primary)
+            .background(isSelected ? Color.dopamineAcid : Color.dopamineSurface)
+            .foregroundStyle(isSelected ? .black : .white)
             .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isSelected ? Color.clear : Color.white.opacity(0.2), lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
@@ -147,32 +158,33 @@ struct CategoryPreviewSection: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 6) {
                     Image(systemName: category.iconName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.dopamineCaption)
+                        .foregroundStyle(Color.dopamineYellow)
                     Text(category.displayName)
-                        .font(.subheadline)
+                        .font(.dopamineSubheadline)
                         .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.dopamineSecondary)
                 }
 
                 ForEach(filteredItems) { item in
                     HStack {
                         Circle()
-                            .fill(Color.secondary.opacity(0.3))
+                            .fill(Color.dopamineAcid.opacity(0.5))
                             .frame(width: 6, height: 6)
                         if let qty = item.quantity {
                             Text(qty)
-                                .fontWeight(.medium)
+                                .font(.dopamineBodyMedium)
+                                .foregroundStyle(Color.dopamineYellow)
                         }
                         Text(item.text)
+                            .font(.dopamineBodyRegular)
+                            .foregroundStyle(.white)
                         Spacer()
                     }
-                    .font(.subheadline)
                 }
             }
             .padding()
-            .background(Color(.secondarySystemBackground))
-            .cornerRadius(12)
+            .dopamineCard()
         }
     }
 }
