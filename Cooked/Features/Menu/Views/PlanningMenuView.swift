@@ -15,8 +15,8 @@ struct PlanningMenuView: View {
                 // Header
                 HStack {
                     Text("\(menu.items.count) recipe\(menu.items.count == 1 ? "" : "s")")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.dopamineCaption)
+                        .foregroundStyle(Color.dopamineSecondary)
 
                     Spacer()
 
@@ -24,7 +24,8 @@ struct PlanningMenuView: View {
                         menuState.openRecipePicker()
                     } label: {
                         Label("Add", systemImage: "plus")
-                            .font(.subheadline)
+                            .font(.dopamineSubheadline)
+                            .foregroundStyle(Color.dopamineAcid)
                     }
                 }
                 .padding(.horizontal)
@@ -39,27 +40,26 @@ struct PlanningMenuView: View {
             }
             .padding(.top)
         }
+        .background(Color.dopamineBlack)
         .safeAreaInset(edge: .bottom) {
             // "Start Cooking" button
             if !menu.items.isEmpty {
                 VStack(spacing: 0) {
-                    Divider()
+                    Rectangle()
+                        .fill(Color.dopamineSurface)
+                        .frame(height: 1)
                     Button {
                         Task {
                             await menuState.startCooking()
                         }
                     } label: {
                         Text("Ready to Cook")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
                     }
+                    .buttonStyle(DopaminePrimaryButtonStyle())
                     .padding()
                 }
-                .background(.ultraThinMaterial)
+                .background(Color.dopamineBlack.opacity(0.95))
+                .dopamineFrostedGlass()
             }
         }
     }

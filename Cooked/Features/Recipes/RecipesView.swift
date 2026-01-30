@@ -21,6 +21,7 @@ struct RecipesView: View {
                     recipeGridView
                 }
             }
+            .background(Color.dopamineBlack)
             .navigationTitle("Recipes")
             .searchable(text: $state.searchText, prompt: "Search recipes")
             .toolbar {
@@ -31,6 +32,7 @@ struct RecipesView: View {
                             recipeState.startImport()
                         } label: {
                             Image(systemName: "plus")
+                                .foregroundStyle(Color.dopamineAcid)
                         }
                     }
                 }
@@ -53,26 +55,30 @@ struct RecipesView: View {
 
             Image(systemName: "book.fill")
                 .font(.system(size: 60))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.dopaminePink)
+                .dopamineGlow(color: .dopaminePink)
 
             Text("No Recipes Yet")
-                .font(.title)
+                .font(.dopamineTitle2)
+                .foregroundStyle(.white)
 
             Text("Import your first recipe to get started")
-                .foregroundStyle(.secondary)
+                .font(.dopamineBody())
+                .foregroundStyle(Color.dopamineSecondary)
 
             Button {
                 recipeState.startImport()
             } label: {
                 Label("Import Recipe", systemImage: "plus")
-                    .font(.headline)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
+            .buttonStyle(DopaminePrimaryButtonStyle())
+            .padding(.horizontal, 40)
             .padding(.top, 8)
 
             Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.dopamineBlack)
     }
 
     private var recipeGridView: some View {
@@ -90,14 +96,15 @@ struct RecipesView: View {
                 // Results count
                 HStack {
                     Text(resultsText)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.dopamineCaption)
+                        .foregroundStyle(Color.dopamineSecondary)
 
                     if hasActiveFilters {
                         Button("Clear") {
                             recipeState.clearFilters()
                         }
-                        .font(.subheadline)
+                        .font(.dopamineCaption)
+                        .foregroundStyle(Color.dopamineAcid)
                     }
                 }
                 .padding(.horizontal)
@@ -133,6 +140,7 @@ struct RecipesView: View {
             }
             .padding(.top)
         }
+        .background(Color.dopamineBlack)
         .refreshable {
             await recipeState.loadRecipes()
         }
@@ -142,19 +150,21 @@ struct RecipesView: View {
         VStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 40))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.dopamineSecondary)
 
             Text("No recipes found")
-                .font(.headline)
+                .font(.dopamineHeadline)
+                .foregroundStyle(.white)
 
             Text("Try adjusting your search or filters")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.dopamineCaption)
+                .foregroundStyle(Color.dopamineSecondary)
 
             Button("Clear Filters") {
                 recipeState.clearFilters()
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(DopamineSecondaryButtonStyle())
+            .padding(.horizontal, 60)
             .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)

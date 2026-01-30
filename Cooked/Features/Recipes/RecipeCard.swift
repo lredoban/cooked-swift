@@ -9,9 +9,9 @@ struct RecipeCard: View {
                 AsyncImageView(url: recipe.imageUrl)
                     .frame(height: 120)
                     .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.dopamineSurface)
                     .clipped()
-                    .cornerRadius(12)
+                    .cornerRadius(16)
                     .accessibilityHidden(true)
 
                 if recipe.importStatus == .importing {
@@ -22,15 +22,16 @@ struct RecipeCard: View {
             }
 
             Text(recipe.title)
-                .font(.subheadline)
+                .font(.dopamineSubheadline)
                 .fontWeight(.medium)
+                .foregroundStyle(.white)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
 
             if let sourceName = recipe.sourceName {
                 Text(sourceName)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.dopamineCaption)
+                    .foregroundStyle(Color.dopamineSecondary)
                     .lineLimit(1)
             }
         }
@@ -44,11 +45,12 @@ struct RecipeCard: View {
             Image(systemName: icon)
             Text(text)
         }
-        .font(.caption2)
+        .font(.dopamineCaption2)
         .fontWeight(.medium)
+        .foregroundStyle(.black)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(.ultraThinMaterial)
+        .background(Color.dopamineAcid)
         .cornerRadius(8)
         .padding(6)
     }
@@ -73,4 +75,5 @@ struct RecipeCard: View {
     ))
     .frame(width: 160)
     .padding()
+    .background(Color.dopamineBlack)
 }

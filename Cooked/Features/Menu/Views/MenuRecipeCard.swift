@@ -10,9 +10,9 @@ struct MenuRecipeCard: View {
                 AsyncImageView(url: item.recipe.imageUrl)
                     .frame(height: 120)
                     .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.dopamineSurface)
                     .clipped()
-                    .cornerRadius(12)
+                    .cornerRadius(16)
                     .accessibilityHidden(true)
 
                 Button {
@@ -23,15 +23,16 @@ struct MenuRecipeCard: View {
                     Image(systemName: "xmark.circle.fill")
                         .font(.title3)
                         .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, .black.opacity(0.6))
+                        .foregroundStyle(Color.dopamineBlack, Color.dopaminePink)
                 }
                 .padding(8)
                 .accessibilityLabel("Remove \(item.recipe.title) from menu")
             }
 
             Text(item.recipe.title)
-                .font(.subheadline)
+                .font(.dopamineSubheadline)
                 .fontWeight(.medium)
+                .foregroundStyle(.white)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
         }
@@ -56,4 +57,5 @@ struct MenuRecipeCard: View {
     .environment(MenuState())
     .frame(width: 160)
     .padding()
+    .background(Color.dopamineBlack)
 }

@@ -13,6 +13,7 @@ struct SortPicker: View {
             }
         } label: {
             Label("Sort", systemImage: "arrow.up.arrow.down")
+                .foregroundStyle(Color.dopamineYellow)
         }
     }
 }
