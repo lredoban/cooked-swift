@@ -4,6 +4,13 @@
 //
 //  Vintage Aesthetic - Floating pill tab bar with tangerine accents
 //
+//  STYLE PHILOSOPHY:
+//  "Sunshine Editorial" — Vintage Aesthetic captures the warm nostalgia of 1970s cookbook
+//  photography and lifestyle magazines. Creamy backgrounds, tangerine accents, and rounded
+//  organic shapes evoke Sunday morning brunch vibes. Inspired by Bon Appétit, Mejuri, and
+//  indie recipe blogs, this style feels handcrafted and inviting—like a well-loved recipe
+//  card passed down through generations. Cooking should feel cozy, not clinical.
+//
 
 import SwiftUI
 
