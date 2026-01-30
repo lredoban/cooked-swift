@@ -4,15 +4,17 @@ struct LoadingView: View {
     var message: String = "Loading..."
 
     var body: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .scaleEffect(1.5)
+        VStack(spacing: 20) {
+            GlassLoadingSpinner(size: 48, lineWidth: 4)
+
             Text(message)
-                .foregroundStyle(.secondary)
+                .font(.glassBody())
+                .foregroundColor(.glassTextSecondary)
         }
     }
 }
 
 #Preview {
     LoadingView(message: "Loading recipes...")
+        .spatialBackground()
 }

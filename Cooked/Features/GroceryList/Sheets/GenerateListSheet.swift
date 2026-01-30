@@ -15,7 +15,8 @@ struct GenerateListSheet: View {
                     if !GroceryListState.commonStaples.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("I already have these staples:")
-                                .font(.headline)
+                                .font(.glassHeadline())
+                                .foregroundColor(.glassTextPrimary)
 
                             FlowLayout(spacing: 8) {
                                 ForEach(GroceryListState.commonStaples, id: \.self) { staple in
@@ -40,11 +41,12 @@ struct GenerateListSheet: View {
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
                             Text("Items to add:")
-                                .font(.headline)
+                                .font(.glassHeadline())
+                                .foregroundColor(.glassTextPrimary)
                             Spacer()
                             Text("\(filteredItemCount) items")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .font(.glassMono(13))
+                                .foregroundColor(.glassTextSecondary)
                         }
 
                         // Group items by category
@@ -60,13 +62,16 @@ struct GenerateListSheet: View {
                 }
                 .padding(.vertical)
             }
+            .spatialBackground()
             .navigationTitle("Generate List")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(.glassTextSecondary)
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -76,16 +81,18 @@ struct GenerateListSheet: View {
                         }
                     } label: {
                         if groceryState.isGenerating {
-                            ProgressView()
+                            GlassLoadingSpinner(size: 20, lineWidth: 2)
                         } else {
                             Text("Create List")
-                                .fontWeight(.semibold)
+                                .font(.glassBodyMedium())
+                                .foregroundColor(.accentOrangeStart)
                         }
                     }
                     .disabled(groceryState.isGenerating || filteredItemCount == 0)
                 }
             }
         }
+        .preferredColorScheme(.dark)
     }
 
     private var filteredItemCount: Int {
@@ -114,16 +121,22 @@ struct StapleChip: View {
             HStack(spacing: 4) {
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.caption)
+                        .font(.glassCaption(10))
                 }
                 Text(text.capitalized)
-                    .font(.subheadline)
+                    .font(.glassCaption(13))
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(isSelected ? Color.green : Color.gray.opacity(0.15))
-            .foregroundStyle(isSelected ? .white : .primary)
-            .cornerRadius(16)
+            .foregroundColor(isSelected ? .glassBackground : .glassTextPrimary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(isSelected ? Color.neonGreen : Color.glassSurface)
+            )
+            .overlay(
+                Capsule()
+                    .stroke(isSelected ? Color.clear : Color.glassBorder, lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
@@ -144,35 +157,37 @@ struct CategoryPreviewSection: View {
 
     var body: some View {
         if !filteredItems.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 6) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
                     Image(systemName: category.iconName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.glassCaption())
+                        .foregroundColor(.glassTextSecondary)
                     Text(category.displayName)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
+                        .font(.glassBodyMedium(14))
+                        .foregroundColor(.glassTextSecondary)
                 }
 
-                ForEach(filteredItems) { item in
-                    HStack {
-                        Circle()
-                            .fill(Color.secondary.opacity(0.3))
-                            .frame(width: 6, height: 6)
-                        if let qty = item.quantity {
-                            Text(qty)
-                                .fontWeight(.medium)
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(filteredItems) { item in
+                        HStack(spacing: 10) {
+                            Circle()
+                                .fill(LinearGradient.holographicOrange)
+                                .frame(width: 6, height: 6)
+                            if let qty = item.quantity {
+                                Text(qty)
+                                    .font(.glassBodyMedium(14))
+                                    .foregroundColor(.glassTextPrimary)
+                            }
+                            Text(item.text)
+                                .font(.glassBody(14))
+                                .foregroundColor(.glassTextSecondary)
+                            Spacer()
                         }
-                        Text(item.text)
-                        Spacer()
                     }
-                    .font(.subheadline)
                 }
+                .padding(16)
+                .glassBackground(cornerRadius: 12)
             }
-            .padding()
-            .background(Color(.secondarySystemBackground))
-            .cornerRadius(12)
         }
     }
 }

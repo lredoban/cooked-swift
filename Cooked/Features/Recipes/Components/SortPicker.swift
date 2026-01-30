@@ -13,6 +13,7 @@ struct SortPicker: View {
             }
         } label: {
             Label("Sort", systemImage: "arrow.up.arrow.down")
+                .foregroundColor(.glassTextPrimary)
         }
     }
 }
@@ -20,10 +21,12 @@ struct SortPicker: View {
 #Preview {
     NavigationStack {
         Text("Content")
+            .spatialBackground()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     SortPicker(selection: .constant(.recent))
                 }
             }
+            .toolbarColorScheme(.dark, for: .navigationBar)
     }
 }

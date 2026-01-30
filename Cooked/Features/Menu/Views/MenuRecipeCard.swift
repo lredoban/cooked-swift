@@ -5,35 +5,31 @@ struct MenuRecipeCard: View {
     @Environment(MenuState.self) private var menuState
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ZStack(alignment: .topTrailing) {
-                AsyncImageView(url: item.recipe.imageUrl)
-                    .frame(height: 120)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
-                    .clipped()
-                    .cornerRadius(12)
-                    .accessibilityHidden(true)
-
-                Button {
-                    Task {
-                        await menuState.removeRecipeFromMenu(item)
-                    }
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.title3)
-                        .symbolRenderingMode(.palette)
-                        .foregroundStyle(.white, .black.opacity(0.6))
-                }
-                .padding(8)
-                .accessibilityLabel("Remove \(item.recipe.title) from menu")
-            }
-
+        FrostedImageCard(imageUrl: item.recipe.imageUrl, height: 160) {
             Text(item.recipe.title)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(.glassBodyMedium(14))
+                .foregroundColor(.glassTextPrimary)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .overlay(alignment: .topTrailing) {
+            Button {
+                Task {
+                    await menuState.removeRecipeFromMenu(item)
+                }
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(.glassTextPrimary)
+                    .background(
+                        Circle()
+                            .fill(Color.glassBackground.opacity(0.6))
+                            .padding(2)
+                    )
+            }
+            .padding(8)
+            .accessibilityLabel("Remove \(item.recipe.title) from menu")
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(item.recipe.title)
@@ -42,18 +38,22 @@ struct MenuRecipeCard: View {
 }
 
 #Preview {
-    MenuRecipeCard(
-        item: MenuItemWithRecipe(
-            id: UUID(),
-            recipe: Recipe(
-                userId: UUID(),
-                title: "Delicious Pasta",
-                sourceName: "TikTok"
-            ),
-            isCooked: false
+    ZStack {
+        Color.glassBackground.ignoresSafeArea()
+
+        MenuRecipeCard(
+            item: MenuItemWithRecipe(
+                id: UUID(),
+                recipe: Recipe(
+                    userId: UUID(),
+                    title: "Delicious Pasta",
+                    sourceName: "TikTok"
+                ),
+                isCooked: false
+            )
         )
-    )
-    .environment(MenuState())
-    .frame(width: 160)
-    .padding()
+        .environment(MenuState())
+        .frame(width: 170)
+        .padding()
+    }
 }

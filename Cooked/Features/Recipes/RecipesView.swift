@@ -21,7 +21,11 @@ struct RecipesView: View {
                     recipeGridView
                 }
             }
+            .spatialBackground()
             .navigationTitle("Recipes")
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbarBackground(Color.glassBackground.opacity(0.9), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .searchable(text: $state.searchText, prompt: "Search recipes")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
@@ -31,6 +35,7 @@ struct RecipesView: View {
                             recipeState.startImport()
                         } label: {
                             Image(systemName: "plus")
+                                .foregroundColor(.glassTextPrimary)
                         }
                     }
                 }
@@ -45,30 +50,42 @@ struct RecipesView: View {
                 RecipeDetailView(recipe: recipe)
             }
         }
+        .preferredColorScheme(.dark)
     }
 
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Spacer()
 
-            Image(systemName: "book.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(.secondary)
+            // Glowing icon
+            ZStack {
+                Circle()
+                    .fill(LinearGradient.holographicOrange.opacity(0.2))
+                    .frame(width: 120, height: 120)
+                    .blur(radius: 20)
+
+                Image(systemName: "book.fill")
+                    .font(.system(size: 50))
+                    .foregroundStyle(LinearGradient.holographicOrange)
+            }
+            .accessibilityHidden(true)
 
             Text("No Recipes Yet")
-                .font(.title)
+                .font(.glassTitle())
+                .foregroundColor(.glassTextPrimary)
 
             Text("Import your first recipe to get started")
-                .foregroundStyle(.secondary)
+                .font(.glassBody())
+                .foregroundColor(.glassTextSecondary)
 
             Button {
                 recipeState.startImport()
             } label: {
                 Label("Import Recipe", systemImage: "plus")
-                    .font(.headline)
+                    .font(.glassHeadline())
+                    .glassButton()
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
+            .buttonStyle(.plain)
             .padding(.top, 8)
 
             Spacer()
@@ -90,14 +107,15 @@ struct RecipesView: View {
                 // Results count
                 HStack {
                     Text(resultsText)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.glassCaption())
+                        .foregroundColor(.glassTextSecondary)
 
                     if hasActiveFilters {
                         Button("Clear") {
                             recipeState.clearFilters()
                         }
-                        .font(.subheadline)
+                        .font(.glassCaption())
+                        .foregroundColor(.accentOrangeStart)
                     }
                 }
                 .padding(.horizontal)
@@ -139,22 +157,25 @@ struct RecipesView: View {
     }
 
     private var noResultsView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 16) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 40))
-                .foregroundStyle(.secondary)
+                .foregroundColor(.glassTextSecondary)
 
             Text("No recipes found")
-                .font(.headline)
+                .font(.glassHeadline())
+                .foregroundColor(.glassTextPrimary)
 
             Text("Try adjusting your search or filters")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.glassBody())
+                .foregroundColor(.glassTextSecondary)
 
             Button("Clear Filters") {
                 recipeState.clearFilters()
             }
-            .buttonStyle(.bordered)
+            .font(.glassBody())
+            .glassButtonSecondary(small: true)
+            .buttonStyle(.plain)
             .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)

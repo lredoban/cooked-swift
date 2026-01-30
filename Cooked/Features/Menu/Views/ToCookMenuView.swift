@@ -9,21 +9,21 @@ struct ToCookMenuView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Progress Header
-                VStack(alignment: .leading, spacing: 8) {
+                // Progress Header with neon glow
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Text("\(menu.cookedCount) of \(menu.totalCount) cooked")
-                            .font(.headline)
+                            .font(.glassHeadline())
+                            .foregroundColor(.glassTextPrimary)
 
                         Spacer()
 
                         Text("\(Int(menu.progress * 100))%")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .font(.glassMono(14))
+                            .foregroundColor(.glassTextSecondary)
                     }
 
-                    ProgressView(value: menu.progress)
-                        .tint(.orange)
+                    GlassProgressBar(value: menu.progress, tint: .neonGreen)
                 }
                 .padding(.horizontal)
                 .accessibilityElement(children: .ignore)
@@ -34,11 +34,11 @@ struct ToCookMenuView: View {
                     groceryState.prepareListGeneration(from: menu)
                 } label: {
                     Label("Generate Grocery List", systemImage: "checklist")
-                        .font(.headline)
+                        .font(.glassHeadline())
                         .frame(maxWidth: .infinity)
+                        .glassButton()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.orange)
+                .buttonStyle(.plain)
                 .padding(.horizontal)
                 .accessibilityHint("Creates a shopping list from your menu recipes")
 
@@ -85,6 +85,7 @@ struct ToCookMenuView: View {
             }
         } label: {
             Image(systemName: "ellipsis.circle")
+                .foregroundColor(.glassTextPrimary)
         }
     }
 }
@@ -95,7 +96,8 @@ struct ToCookRecipeRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Button {
+            // Glass checkbox
+            GlassCheckbox(isChecked: item.isCooked) {
                 Task {
                     if item.isCooked {
                         await menuState.unmarkRecipeCooked(item)
@@ -103,38 +105,33 @@ struct ToCookRecipeRow: View {
                         await menuState.markRecipeCooked(item)
                     }
                 }
-            } label: {
-                Image(systemName: item.isCooked ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundStyle(item.isCooked ? .green : .secondary)
             }
             .accessibilityLabel(item.isCooked ? "Mark \(item.recipe.title) as not cooked" : "Mark \(item.recipe.title) as cooked")
 
             AsyncImageView(url: item.recipe.imageUrl)
                 .frame(width: 60, height: 60)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(8)
+                .background(Color.glassSurface)
+                .cornerRadius(12)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.recipe.title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .strikethrough(item.isCooked)
-                    .foregroundStyle(item.isCooked ? .secondary : .primary)
+                    .font(.glassBodyMedium(15))
+                    .foregroundColor(item.isCooked ? .glassTextTertiary : .glassTextPrimary)
+                    .opacity(item.isCooked ? 0.3 : 1.0) // Dim instead of strikethrough
 
                 if let sourceName = item.recipe.sourceName {
                     Text(sourceName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.glassMono(11))
+                        .foregroundColor(.glassTextSecondary)
+                        .opacity(item.isCooked ? 0.3 : 1.0)
                 }
             }
 
             Spacer()
         }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
+        .padding(16)
+        .glassBackground(cornerRadius: 16)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(item.recipe.title), \(item.isCooked ? "cooked" : "not yet cooked")")
     }
@@ -168,7 +165,10 @@ struct ToCookRecipeRow: View {
                 ]
             )
         )
+        .spatialBackground()
         .navigationTitle("Menu")
+        .toolbarColorScheme(.dark, for: .navigationBar)
     }
     .environment(MenuState())
+    .environment(GroceryListState())
 }

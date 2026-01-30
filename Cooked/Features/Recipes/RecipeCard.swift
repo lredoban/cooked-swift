@@ -4,34 +4,34 @@ struct RecipeCard: View {
     let recipe: Recipe
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ZStack(alignment: .topTrailing) {
-                AsyncImageView(url: recipe.imageUrl)
-                    .frame(height: 120)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.1))
-                    .clipped()
-                    .cornerRadius(12)
-                    .accessibilityHidden(true)
+        FrostedImageCard(imageUrl: recipe.imageUrl, height: 180) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(recipe.title)
+                    .font(.glassBodyMedium(14))
+                    .foregroundColor(.glassTextPrimary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
 
-                if recipe.importStatus == .importing {
-                    importBadge(text: "Importing...", icon: "arrow.down.circle.fill")
-                } else if recipe.importStatus == .pendingReview {
-                    importBadge(text: "Ready", icon: "checkmark.circle.fill")
+                if let sourceName = recipe.sourceName {
+                    Text(sourceName)
+                        .font(.glassMono(11))
+                        .foregroundColor(.glassTextSecondary)
+                        .lineLimit(1)
+                }
+
+                if recipe.timesCooked > 0 {
+                    Text("Cooked \(recipe.timesCooked) time\(recipe.timesCooked == 1 ? "" : "s")")
+                        .font(.glassMono(10))
+                        .foregroundColor(.glassTextTertiary)
                 }
             }
-
-            Text(recipe.title)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
-
-            if let sourceName = recipe.sourceName {
-                Text(sourceName)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .overlay(alignment: .topTrailing) {
+            if recipe.importStatus == .importing {
+                importBadge(text: "Importing...", icon: "arrow.down.circle.fill")
+            } else if recipe.importStatus == .pendingReview {
+                importBadge(text: "Ready", icon: "checkmark.circle.fill")
             }
         }
         .accessibilityElement(children: .combine)
@@ -44,13 +44,18 @@ struct RecipeCard: View {
             Image(systemName: icon)
             Text(text)
         }
-        .font(.caption2)
-        .fontWeight(.medium)
+        .font(.glassMono(10))
+        .foregroundColor(.glassTextPrimary)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
+        .background(Color.glassSurface)
         .background(.ultraThinMaterial)
-        .cornerRadius(8)
-        .padding(6)
+        .clipShape(Capsule())
+        .overlay(
+            Capsule()
+                .stroke(Color.glassBorder, lineWidth: 1)
+        )
+        .padding(8)
     }
 
     private var accessibilityLabel: String {
@@ -66,11 +71,16 @@ struct RecipeCard: View {
 }
 
 #Preview {
-    RecipeCard(recipe: Recipe(
-        userId: UUID(),
-        title: "Delicious Pasta Recipe with Tomato Sauce",
-        sourceName: "TikTok"
-    ))
-    .frame(width: 160)
-    .padding()
+    ZStack {
+        Color.glassBackground.ignoresSafeArea()
+
+        RecipeCard(recipe: Recipe(
+            userId: UUID(),
+            title: "Delicious Pasta Recipe with Tomato Sauce",
+            sourceName: "TikTok",
+            timesCooked: 3
+        ))
+        .frame(width: 170)
+        .padding()
+    }
 }
